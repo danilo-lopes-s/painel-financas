@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Financeiro Pessoal</title>
     <!-- COFRE DE DADOS INJETADOS -->
-    <script id="dados_injetados"> window.INJETADO = null; </script>
+    <script id="dados_injetados"> window.INJETADO = JSON.parse("{\"contas\":[{\"nome\":\"Nubank\",\"tipo\":\"corrente\",\"saldo\":8500},{\"nome\":\"Itaú\",\"tipo\":\"corrente\",\"saldo\":4200}],\"cartoes\":[{\"nome\":\"Itaú Black\",\"bandeira\":\"visa\",\"limite\":15000,\"vencimento\":15,\"faturaAtual\":0},{\"nome\":\"Nubank Exemplo\",\"limite\":8000,\"vencimento\":10,\"bandeira\":\"mastercard\",\"faturaAtual\":0,\"exemplo\":true},{\"nome\":\"Inter Exemplo\",\"limite\":10000,\"vencimento\":15,\"bandeira\":\"mastercard\",\"faturaAtual\":0,\"exemplo\":true},{\"nome\":\"Santander Exemplo\",\"limite\":12000,\"vencimento\":20,\"bandeira\":\"mastercard\",\"faturaAtual\":0,\"exemplo\":true}],\"despesas\":[{\"id\":\"desp_muzuc252srfu\",\"titulo\":\"Supermercado\",\"categoria\":\"Compras para Casa\",\"valor\":850,\"data\":\"2026-10-05\",\"origem\":\"cartao_Itaú Black\",\"parcelas\":1},{\"id\":\"desp_muzuc2524d5p\",\"titulo\":\"Pensão Felipe\",\"categoria\":\"Pensão e extras - Felipe\",\"valor\":1200,\"data\":\"2026-10-10\",\"origem\":\"conta_Itaú\",\"parcelas\":1},{\"id\":\"desp_muzuc252vkkl\",\"titulo\":\"Combustível\",\"categoria\":\"Transporte\",\"valor\":250,\"data\":\"2026-10-12\",\"origem\":\"conta_Nubank\",\"parcelas\":1},{\"id\":\"desp_muzuc252rkdg\",\"titulo\":\"Consulta Médica\",\"categoria\":\"Médicos e Farmácia\",\"valor\":300,\"data\":\"2026-10-20\",\"origem\":\"cartao_Itaú Black\",\"parcelas\":1},{\"id\":\"desp_muzuc252cpnw\",\"titulo\":\"TV Nova (3/3)\",\"categoria\":\"Moradia\",\"valor\":1500,\"data\":\"2026-10-15\",\"origem\":\"cartao_Itaú Black\",\"parcelas\":3},{\"id\":\"desp_muzuc252ucjb\",\"titulo\":\"Supermercado\",\"categoria\":\"Compras para Casa\",\"valor\":850,\"data\":\"2026-09-05\",\"origem\":\"cartao_Itaú Black\",\"parcelas\":1},{\"id\":\"desp_muzuc252g866\",\"titulo\":\"Pensão Felipe\",\"categoria\":\"Pensão e extras - Felipe\",\"valor\":1200,\"data\":\"2026-09-10\",\"origem\":\"conta_Itaú\",\"parcelas\":1},{\"id\":\"desp_muzuc252twew\",\"titulo\":\"Combustível\",\"categoria\":\"Transporte\",\"valor\":250,\"data\":\"2026-09-12\",\"origem\":\"conta_Nubank\",\"parcelas\":1},{\"id\":\"desp_muzuc252ed2w\",\"titulo\":\"Consulta Médica\",\"categoria\":\"Médicos e Farmácia\",\"valor\":300,\"data\":\"2026-09-20\",\"origem\":\"cartao_Itaú Black\",\"parcelas\":1},{\"id\":\"desp_muzuc252xu6a\",\"titulo\":\"TV Nova (2/3)\",\"categoria\":\"Moradia\",\"valor\":1500,\"data\":\"2026-09-15\",\"origem\":\"cartao_Itaú Black\",\"parcelas\":3},{\"id\":\"desp_muzuc252juc2\",\"titulo\":\"Supermercado\",\"categoria\":\"Compras para Casa\",\"valor\":850,\"data\":\"2026-08-05\",\"origem\":\"cartao_Itaú Black\",\"parcelas\":1},{\"id\":\"desp_muzuc252cneu\",\"titulo\":\"Pensão Felipe\",\"categoria\":\"Pensão e extras - Felipe\",\"valor\":1200,\"data\":\"2026-08-10\",\"origem\":\"conta_Itaú\",\"parcelas\":1},{\"id\":\"desp_muzuc252fmhk\",\"titulo\":\"Combustível\",\"categoria\":\"Transporte\",\"valor\":250,\"data\":\"2026-08-12\",\"origem\":\"conta_Nubank\",\"parcelas\":1},{\"id\":\"desp_muzuc252d6q1\",\"titulo\":\"Consulta Médica\",\"categoria\":\"Médicos e Farmácia\",\"valor\":300,\"data\":\"2026-08-20\",\"origem\":\"cartao_Itaú Black\",\"parcelas\":1},{\"id\":\"desp_muzuc252ypf7\",\"titulo\":\"TV Nova (1/3)\",\"categoria\":\"Moradia\",\"valor\":1500,\"data\":\"2026-08-15\",\"origem\":\"cartao_Itaú Black\",\"parcelas\":3},{\"id\":\"exemplo_v13_0_0\",\"parcelamentoId\":\"exemplo_v13_0\",\"numeroParcela\":1,\"titulo\":\"Notebook — exemplo (1/3)\",\"categoria\":\"Outros\",\"valor\":1200,\"data\":\"2026-09-10\",\"origem\":\"cartao_Nubank Exemplo\",\"parcelas\":3,\"exemplo\":true},{\"id\":\"exemplo_v13_0_1\",\"parcelamentoId\":\"exemplo_v13_0\",\"numeroParcela\":2,\"titulo\":\"Notebook — exemplo (2/3)\",\"categoria\":\"Outros\",\"valor\":1200,\"data\":\"2026-10-10\",\"origem\":\"cartao_Nubank Exemplo\",\"parcelas\":3,\"exemplo\":true},{\"id\":\"exemplo_v13_0_2\",\"parcelamentoId\":\"exemplo_v13_0\",\"numeroParcela\":3,\"titulo\":\"Notebook — exemplo (3/3)\",\"categoria\":\"Outros\",\"valor\":1200,\"data\":\"2026-11-10\",\"origem\":\"cartao_Nubank Exemplo\",\"parcelas\":3,\"exemplo\":true},{\"id\":\"exemplo_v13_1_0\",\"parcelamentoId\":\"exemplo_v13_1\",\"numeroParcela\":1,\"titulo\":\"Móveis — exemplo (1/5)\",\"categoria\":\"Outros\",\"valor\":500,\"data\":\"2026-10-15\",\"origem\":\"cartao_Inter Exemplo\",\"parcelas\":5,\"exemplo\":true},{\"id\":\"exemplo_v13_1_1\",\"parcelamentoId\":\"exemplo_v13_1\",\"numeroParcela\":2,\"titulo\":\"Móveis — exemplo (2/5)\",\"categoria\":\"Outros\",\"valor\":500,\"data\":\"2026-11-15\",\"origem\":\"cartao_Inter Exemplo\",\"parcelas\":5,\"exemplo\":true},{\"id\":\"exemplo_v13_1_2\",\"parcelamentoId\":\"exemplo_v13_1\",\"numeroParcela\":3,\"titulo\":\"Móveis — exemplo (3/5)\",\"categoria\":\"Outros\",\"valor\":500,\"data\":\"2026-12-15\",\"origem\":\"cartao_Inter Exemplo\",\"parcelas\":5,\"exemplo\":true},{\"id\":\"exemplo_v13_1_3\",\"parcelamentoId\":\"exemplo_v13_1\",\"numeroParcela\":4,\"titulo\":\"Móveis — exemplo (4/5)\",\"categoria\":\"Outros\",\"valor\":500,\"data\":\"2027-01-15\",\"origem\":\"cartao_Inter Exemplo\",\"parcelas\":5,\"exemplo\":true},{\"id\":\"exemplo_v13_1_4\",\"parcelamentoId\":\"exemplo_v13_1\",\"numeroParcela\":5,\"titulo\":\"Móveis — exemplo (5/5)\",\"categoria\":\"Outros\",\"valor\":500,\"data\":\"2027-02-15\",\"origem\":\"cartao_Inter Exemplo\",\"parcelas\":5,\"exemplo\":true},{\"id\":\"exemplo_v13_2_0\",\"parcelamentoId\":\"exemplo_v13_2\",\"numeroParcela\":1,\"titulo\":\"Viagem — exemplo (1/6)\",\"categoria\":\"Outros\",\"valor\":800,\"data\":\"2026-09-20\",\"origem\":\"cartao_Santander Exemplo\",\"parcelas\":6,\"exemplo\":true},{\"id\":\"exemplo_v13_2_1\",\"parcelamentoId\":\"exemplo_v13_2\",\"numeroParcela\":2,\"titulo\":\"Viagem — exemplo (2/6)\",\"categoria\":\"Outros\",\"valor\":800,\"data\":\"2026-10-20\",\"origem\":\"cartao_Santander Exemplo\",\"parcelas\":6,\"exemplo\":true},{\"id\":\"exemplo_v13_2_2\",\"parcelamentoId\":\"exemplo_v13_2\",\"numeroParcela\":3,\"titulo\":\"Viagem — exemplo (3/6)\",\"categoria\":\"Outros\",\"valor\":800,\"data\":\"2026-11-20\",\"origem\":\"cartao_Santander Exemplo\",\"parcelas\":6,\"exemplo\":true},{\"id\":\"exemplo_v13_2_3\",\"parcelamentoId\":\"exemplo_v13_2\",\"numeroParcela\":4,\"titulo\":\"Viagem — exemplo (4/6)\",\"categoria\":\"Outros\",\"valor\":800,\"data\":\"2026-12-20\",\"origem\":\"cartao_Santander Exemplo\",\"parcelas\":6,\"exemplo\":true},{\"id\":\"exemplo_v13_2_4\",\"parcelamentoId\":\"exemplo_v13_2\",\"numeroParcela\":5,\"titulo\":\"Viagem — exemplo (5/6)\",\"categoria\":\"Outros\",\"valor\":800,\"data\":\"2027-01-20\",\"origem\":\"cartao_Santander Exemplo\",\"parcelas\":6,\"exemplo\":true},{\"id\":\"exemplo_v13_2_5\",\"parcelamentoId\":\"exemplo_v13_2\",\"numeroParcela\":6,\"titulo\":\"Viagem — exemplo (6/6)\",\"categoria\":\"Outros\",\"valor\":800,\"data\":\"2027-02-20\",\"origem\":\"cartao_Santander Exemplo\",\"parcelas\":6,\"exemplo\":true}],\"recebimentos\":[{\"id\":\"rec_muzuc252vfjl\",\"titulo\":\"Salário\",\"valor\":6500,\"data\":\"2026-10-05\",\"categoriaRecebimento\":\"Pix\",\"conta\":\"Itaú\"},{\"id\":\"rec_muzuc2525zw2\",\"titulo\":\"Salário\",\"valor\":6500,\"data\":\"2026-09-05\",\"categoriaRecebimento\":\"Pix\",\"conta\":\"Itaú\"},{\"id\":\"rec_muzuc252k4ie\",\"titulo\":\"Salário\",\"valor\":6500,\"data\":\"2026-08-05\",\"categoriaRecebimento\":\"Pix\",\"conta\":\"Itaú\"}],\"planejamentos\":[{\"id\":\"plan_muzuc252imd2\",\"descricao\":\"Venda Freela\",\"valor\":1500,\"data\":\"2026-10-25\",\"status\":\"Planejado\"},{\"id\":\"plan_muzuc252m94y\",\"descricao\":\"Venda Freela\",\"valor\":1500,\"data\":\"2026-09-25\",\"status\":\"Confirmado\"},{\"id\":\"plan_muzuc252r71b\",\"descricao\":\"Venda Freela\",\"valor\":1500,\"data\":\"2026-08-25\",\"status\":\"Confirmado\"}],\"categorias\":[{\"id\":\"cat_muzuc252l0ih\",\"nome\":\"Alimentação\",\"icon\":\"🍔\",\"cor\":\"#f56565\"},{\"id\":\"cat_muzuc252aehj\",\"nome\":\"Moradia\",\"icon\":\"🏠\",\"cor\":\"#4299e1\"},{\"id\":\"cat_muzuc2527k8l\",\"nome\":\"Transporte\",\"icon\":\"🚗\",\"cor\":\"#ed8936\"},{\"id\":\"cat_muzuc252sm35\",\"nome\":\"Lazer\",\"icon\":\"🎮\",\"cor\":\"#9f7aea\"},{\"id\":\"cat_muzuc252rlm7\",\"nome\":\"Médicos e Farmácia\",\"icon\":\"🏥\",\"cor\":\"#48bb78\"},{\"id\":\"cat_muzuc252wbam\",\"nome\":\"Pensão e extras - Felipe\",\"icon\":\"👦\",\"cor\":\"#38b2ac\"},{\"id\":\"cat_muzuc25284fo\",\"nome\":\"Saúde e Bem Estar\",\"icon\":\"🧘\",\"cor\":\"#4fd1c5\"},{\"id\":\"cat_muzuc25288c3\",\"nome\":\"Compras para Casa\",\"icon\":\"🛒\",\"cor\":\"#ecc94b\"},{\"id\":\"cat_muzuc252go0w\",\"nome\":\"Outros\",\"icon\":\"📦\",\"cor\":\"#a0aec0\"}],\"dinheiroFisico\":450,\"navOrder\":[],\"timestamp\":1791482347478,\"exemplosV13\":true}"); </script>
     <style>
         :root {
             --pri: #667eea; --pri-hover: #5a67d8; --pri2: #764ba2;
@@ -331,11 +331,14 @@
         const bibliotecaIcones = ['🍔','🏠','🚗','🚌','✈️','🏥','💊','🎮','⚽','👕','🛍️','📚','💻','📱','👦','🧒','🧘','💆','🛒','🛠️','✂️','⚡','💧','🔥','🧾','💰','💎'];
 
         function boot() {
-            // Forcei v9 para popular dados corretamente a pedido do usuário
-            let localData = null; try { localData = JSON.parse(localStorage.getItem('painelFinanceiro_v9')); } catch(e) {}
-            let fileData = window.INJETADO; 
-
-            if (fileData) { dados = fileData; } else if (localData) { dados = localData; } else { gerarDadosDeExemplo(); }
+            // Arquivo independente: carrega APENAS os dados incorporados no próprio HTML.
+            // Não usa o armazenamento compartilhado do navegador para dados financeiros.
+            const fileData = window.INJETADO;
+            if (fileData && typeof fileData === 'object' && !Array.isArray(fileData)) {
+                dados = JSON.parse(JSON.stringify(fileData));
+            } else {
+                gerarDadosDeExemplo();
+            }
             
             // Garantir Categorias pedidas (se vier vazio ou v9 limpar)
             if(!dados.zerado && (!dados.categorias || dados.categorias.length === 0)) {
@@ -405,7 +408,9 @@
         window.addEventListener('beforeunload', (e) => { if(hasUnsavedChanges) { e.preventDefault(); e.returnValue = 'Alterações não salvas!'; } });
         function marcarAlteracao() { hasUnsavedChanges = true; document.getElementById('unsavedIndicator').hidden=false; }
         function limparIndicadorAlteracao() { hasUnsavedChanges=false; document.getElementById('unsavedIndicator').hidden=true; }
-        function salvarDadosLocal(isBoot = false) { localStorage.setItem('painelFinanceiro_v9', JSON.stringify(dados)); if(!isBoot) marcarAlteracao(); }
+        // Mantém a assinatura usada pelos módulos: só sinaliza alteração pendente.
+        // Persistência ocorre SOMENTE ao gerar o HTML pelo botão Salvar Arquivo.
+        function salvarDadosLocal(isBoot = false) { if (!isBoot) marcarAlteracao(); }
 
         function mudarMes(delta) { let d = new Date(globalAno, globalMes + delta, 1); globalAno=d.getFullYear(); globalMes=d.getMonth(); globalDia=Math.min(globalDia,new Date(globalAno,globalMes+1,0).getDate()); atualizarLabelMes(); refresh(); }
         function emPeriodo(x) { return x.data && (modoPeriodo==='dia' ? x.data === `${getGlobalTargetYM()}-${String(globalDia).padStart(2,'0')}` : x.data.slice(0,7)===getGlobalTargetYM()); }
@@ -1029,6 +1034,12 @@
             renderVisao();
         }
 
+        function nomeArquivoAtual() {
+            let nome = location.pathname.split('/').pop() || '';
+            try { nome = decodeURIComponent(nome); } catch (e) {}
+            return /^[^\\/:*?"<>|]+\.html?$/i.test(nome) ? nome : 'Painel_Financeiro_V15_Independente.html';
+        }
+
         window.salvarArquivo = async () => {
             dados.timestamp = Date.now();
             let htmlContent = document.documentElement.outerHTML;
@@ -1039,12 +1050,12 @@
 
             try {
                 if (window.showSaveFilePicker) {
-                    const fileHandle = await window.showSaveFilePicker({ suggestedName: 'Painel_Financeiro_Atualizado.html', types: [{ description: 'Arquivo HTML', accept: {'text/html': ['.html']} }] });
+                    const fileHandle = await window.showSaveFilePicker({ suggestedName: nomeArquivoAtual(), types: [{ description: 'Arquivo HTML', accept: {'text/html': ['.html']} }] });
                     const writable = await fileHandle.createWritable(); await writable.write(blob); await writable.close();
                     limparIndicadorAlteracao(); salvarDadosLocal(true); showToast('✅ Arquivo salvo/sobrescrito!');
                 } else throw new Error("Fallback");
             } catch (err) {
-                if(err.name !== 'AbortError') { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'Painel_Financeiro_Atualizado.html'; document.body.appendChild(a); a.click(); document.body.removeChild(a); limparIndicadorAlteracao(); showToast('✅ Download gerado!'); }
+                if(err.name !== 'AbortError') { const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = nomeArquivoAtual(); document.body.appendChild(a); a.click(); document.body.removeChild(a); limparIndicadorAlteracao(); showToast('✅ Download gerado!'); }
             }
         };
 
@@ -1152,8 +1163,12 @@
             dados.exemplosV13=true;
         }
         function aplicarTema(escuro) { document.body.classList.toggle('dark',escuro); document.getElementById('themeToggle').textContent=escuro?'☀️ Modo claro':'🌙 Modo escuro'; document.getElementById('themeToggle').setAttribute('aria-pressed',String(escuro)); }
-        function alternarTema() { const escuro=!document.body.classList.contains('dark'); aplicarTema(escuro); localStorage.setItem('painelFinanceiro_tema',escuro?'dark':'light'); }
-        aplicarTema(localStorage.getItem('painelFinanceiro_tema')==='dark');
+        function alternarTema() {
+            const escuro = !document.body.classList.contains('dark');
+            aplicarTema(escuro);
+            marcarAlteracao(); // Tema também pertence somente a este HTML quando salvo.
+        }
+        aplicarTema(document.body.classList.contains('dark'));
 
         boot();
     </script>
