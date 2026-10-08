@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel Financeiro Pessoal</title>
+    <title>Painel Financeiro Pessoal + Investimentos</title>
     <!-- COFRE DE DADOS INJETADOS -->
     <script id="dados_injetados"> window.INJETADO = null; </script>
     <style>
