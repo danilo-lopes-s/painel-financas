@@ -228,6 +228,36 @@
         .ctx-box .metric-chart{border:none;box-shadow:none;margin:0;padding:8px 0;}
         body.dark .inv-type:hover{background:#2b3651;}
         @media(max-width:680px){.inv-form-section .form-row{grid-template-columns:1fr;}.inv-catalog{grid-template-columns:1fr}.inv-projections{grid-template-columns:repeat(2,minmax(0,1fr));}}
+        /* V18: datas das faturas, painel de conciliacao e filtro de parcelas */
+        .invoice-badge{background:#7c57ca!important;border:1px solid #ae8de4;cursor:pointer;}
+        .invoice-badge.is-settled{background:#276f4a!important;border-color:#3ca878;}
+        .invoice-badge.is-empty{background:#536179!important;border-color:#73859e;}
+        .invoice-warning{color:var(--bad);font-weight:750;}
+        .invoice-good{color:var(--ok);font-weight:750;}
+        .invoice-info{display:block;font-size:.77rem;color:var(--muted);margin-top:5px;}
+        .invoice-list-header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+        #despesaParcelasBox[hidden]{display:none!important;}
+        .ctx-box table .invoice-link{text-decoration:underline;text-underline-offset:3px;}
+        /* Indicadores de vencimento: linha propria, sem comprimir a data ou os KPIs. */
+        .invoice-deadline { display:inline-flex;align-items:center;max-width:100%;width:max-content;box-sizing:border-box;
+            margin-top:6px;padding:4px 10px;border:1px solid transparent;border-radius:99px;
+            font-weight:800;font-size:.77rem;line-height:1.3;white-space:normal; }
+        .invoice-deadline--green {color:#167538;background:#e5f7ea;border-color:#82cca0;}
+        .invoice-deadline--blue {color:#185caa;background:#e6f0ff;border-color:#86b3ed;}
+        .invoice-deadline--yellow {color:#795700;background:#fff2bd;border-color:#e1c45a;}
+        .invoice-deadline--orange {color:#a34500;background:#ffe4cc;border-color:#efaa70;}
+        .invoice-deadline--red {color:#ae2020;background:#ffe4e4;border-color:#e79595;}
+        body.dark .invoice-deadline--green {color:#8de7a9;background:#173e29;border-color:#367b50;}
+        body.dark .invoice-deadline--blue {color:#add3ff;background:#193756;border-color:#4a81ba;}
+        body.dark .invoice-deadline--yellow {color:#ffdf82;background:#4b3910;border-color:#866922;}
+        body.dark .invoice-deadline--orange {color:#ffc498;background:#542b15;border-color:#a45b27;}
+        body.dark .invoice-deadline--red {color:#ffacac;background:#521f27;border-color:#aa4753;}
+        .invoice-card-label {display:block;min-width:0;}
+        .invoice-card-name {display:block;font-size:.9rem;overflow-wrap:anywhere;}
+        .invoice-card-label small.invoice-info {display:block;margin-top:5px;color:var(--muted);font-size:.77rem;}
+        .invoice-kpi-date {overflow-wrap:normal;font-size:1.15rem;}
+        .invoice-kpi-status {display:block;margin-top:5px;}
+        .card-summary-table .invoice-deadline {display:inline-flex;}
     </style>
 </head>
 <body>
@@ -298,9 +328,9 @@
                     <h3>📊 Composição do Saldo Líquido</h3>
                     <div class="balance-line"><span>Dinheiro físico em mãos</span><strong id="saldoFisico">R$ 0,00</strong></div>
                     <div class="balance-line"><span>Total em Contas</span><strong id="saldoDigital">R$ 0,00</strong></div>
-                    <div class="balance-line"><span>Faturas Pendentes</span><strong id="saldoFaturas" style="color:var(--bad)">- R$ 0,00</strong></div>
+                    <div class="balance-line"><span>Faturas Pendentes (período)</span><strong id="saldoFaturas" style="color:var(--bad)">- R$ 0,00</strong></div>
                     <div class="balance-total" id="saldoGeral">R$ 0,00</div>
-                    <small style="display:block;margin-top:10px;color:var(--muted)">Baseado no mês atual visualizado</small>
+                    <small style="display:block;margin-top:10px;color:var(--muted)">Saldos de contas atuais; faturas em aberto do período selecionado. Pagamentos/recebimentos confirmados atualizam os saldos.</small>
                 </div>
                 <div class="evolution-panel">
                     <div class="evolution-head">
@@ -327,9 +357,9 @@
     </div>
 
     <!-- MODAIS DE EDIÇÃO -->
-    <div id="despesaModal" class="modal" onclick="if(event.target===this) closeModal('despesaModal')"><div class="modal-content"><div class="modal-header"><h2 id="tituloModalDespesa">📤 Nova Despesa</h2><button class="modal-close" onclick="closeModal('despesaModal')">✕</button></div><input type="hidden" id="despesaIdEdicao"><div class="form-group"><label>Título</label><input type="text" id="despesaTitulo" placeholder="O que você pagou?"></div><div class="form-row"><div class="form-group"><label>Valor</label><input type="number" id="despesaValor" step="0.01"></div><div class="form-group"><label>Data</label><input type="date" id="despesaData"></div></div><div class="form-group"><label>Categoria</label><select id="despesaCategoria"></select></div><div class="form-group"><label>Origem/Pagamento</label><select id="despesaOrigem"></select></div><div class="form-row" id="despesaFrequenciaBox" style="background:#f7fafc;padding:10px;border-radius:8px;margin-bottom:15px;"><div class="form-group" style="margin-bottom:0;"><label>Repetição</label><select id="despesaFrequencia" onchange="atualizarCamposRecorrencia('despesa')"><option value="unica">Única vez</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option><option value="mensal">Mensal</option><option value="anual">Anual</option></select></div><div class="form-group" id="grupoDespesaVezes" style="display:none;margin-bottom:0;"><label>Vezes</label><input type="number" id="despesaVezes" min="1" max="600" value="2"></div></div><div class="form-group" id="despesaEdicaoEscopo" hidden><label>Aplicar alterações</label><select id="despesaEscopo" onchange="alterarEscopoRecorrencia('despesas')"><option value="serie">Toda a série (inclusive quantidade)</option><option value="unica">Somente esta ocorrência</option></select></div><div class="form-group" id="despesaParcelasBox"><label>Parcelas no Cartão</label><input type="number" id="despesaParcelas" min="1" value="1"></div><button class="btn btn-primary" id="btnSalvarDespesa" onclick="salvarDespesa()">Salvar</button></div></div>
+    <div id="despesaModal" class="modal" onclick="if(event.target===this) closeModal('despesaModal')"><div class="modal-content"><div class="modal-header"><h2 id="tituloModalDespesa">📤 Nova Despesa</h2><button class="modal-close" onclick="closeModal('despesaModal')">✕</button></div><input type="hidden" id="despesaIdEdicao"><div class="form-group"><label>Título</label><input type="text" id="despesaTitulo" placeholder="O que você pagou?"></div><div class="form-row"><div class="form-group"><label>Valor</label><input type="number" id="despesaValor" step="0.01"></div><div class="form-group"><label>Data</label><input type="date" id="despesaData"></div></div><div class="form-group"><label>Categoria</label><select id="despesaCategoria"></select></div><div class="form-group"><label>Origem/Pagamento</label><select id="despesaOrigem" onchange="atualizarVisibilidadeParcelas()"></select></div><div class="form-row" id="despesaFrequenciaBox" style="background:#f7fafc;padding:10px;border-radius:8px;margin-bottom:15px;"><div class="form-group" style="margin-bottom:0;"><label>Repetição</label><select id="despesaFrequencia" onchange="atualizarCamposRecorrencia('despesa')"><option value="unica">Única vez</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option><option value="mensal">Mensal</option><option value="anual">Anual</option></select></div><div class="form-group" id="grupoDespesaVezes" style="display:none;margin-bottom:0;"><label>Vezes</label><input type="number" id="despesaVezes" min="1" max="600" value="2"></div></div><div class="form-group" id="despesaEdicaoEscopo" hidden><label>Aplicar alterações</label><select id="despesaEscopo" onchange="alterarEscopoRecorrencia('despesas')"><option value="serie">Toda a série (inclusive quantidade)</option><option value="unica">Somente esta ocorrência</option></select></div><div class="form-group" id="despesaParcelasBox" hidden><label>Parcelas no Cartão</label><input type="number" id="despesaParcelas" min="1" value="1" disabled></div><button class="btn btn-primary" id="btnSalvarDespesa" onclick="salvarDespesa()">Salvar</button></div></div>
     <div id="recebimentoModal" class="modal" onclick="if(event.target===this) closeModal('recebimentoModal')"><div class="modal-content"><div class="modal-header"><h2 id="tituloModalRecebimento">💰 Novo Recebimento</h2><button class="modal-close" onclick="closeModal('recebimentoModal')">✕</button></div><input type="hidden" id="recebimentoIdEdicao"><div class="form-group"><label>Origem/Cliente</label><input type="text" id="recTitulo"></div><div class="form-row"><div class="form-group"><label>Valor</label><input type="number" id="recValor" step="0.01"></div><div class="form-group"><label>Data</label><input type="date" id="recData"></div></div><div class="form-group"><label>Tipo de Entrada</label><select id="recCat" onchange="document.getElementById('recContaBox').style.display=this.value==='Pix'?'block':'none'"><option value="Pix">Digital (Conta/Pix)</option><option value="Dinheiro">Físico (Em Mãos)</option></select></div><div class="form-group" id="recContaBox"><label>Conta Destino</label><select id="recConta"></select></div><div class="form-row recurring-settings" id="recFrequenciaBox"><div class="form-group"><label>Repetição</label><select id="recFrequencia" onchange="atualizarCamposRecorrencia('rec')"><option value="unica">Única vez</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option><option value="mensal">Mensal</option><option value="anual">Anual</option></select></div><div class="form-group" id="grupoRecVezes"><label>Quantidade de ocorrências</label><input type="number" id="recVezes" min="1" max="600" value="2"></div></div><div class="form-group" id="recEdicaoEscopo" hidden><label>Aplicar alterações</label><select id="recEscopo" onchange="alterarEscopoRecorrencia('recebimentos')"><option value="serie">Toda a série (inclusive quantidade)</option><option value="unica">Somente esta ocorrência</option></select></div><button class="btn btn-primary" id="btnSalvarRecebimento" onclick="salvarRecebimento()">Salvar</button></div></div>
-    <div id="planModal" class="modal" onclick="if(event.target===this) closeModal('planModal')"><div class="modal-content"><div class="modal-header"><h2 id="tituloModalPlan">🎯 Planejar Meta</h2><button class="modal-close" onclick="closeModal('planModal')">✕</button></div><input type="hidden" id="planIdEdicao"><div class="form-group"><label>Descrição da Meta</label><input type="text" id="planDesc"></div><div class="form-row"><div class="form-group"><label>Valor Esperado</label><input type="number" id="planValor" step="0.01"></div><div class="form-group"><label>Data Prevista</label><input type="date" id="planData"></div></div><div class="form-row" id="planFrequenciaBox" style="background:#f7fafc;padding:10px;border-radius:8px;margin-bottom:15px;"><div class="form-group" style="margin-bottom:0;"><label>Frequência (Gerar lotes)</label><select id="planFrequencia" onchange="document.getElementById('grupoPlanVezes').style.display=this.value==='unica'?'none':'block'"><option value="unica">Apenas esta</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option><option value="mensal">Mensal</option></select></div><div class="form-group" id="grupoPlanVezes" style="display:none;margin-bottom:0;"><label>Qtd Meses/Semanas</label><input type="number" id="planVezes" min="2" value="2"></div></div><button class="btn btn-primary" id="btnSalvarPlan" onclick="salvarPlanejamento()">Salvar Planejamento</button></div></div>
+    <div id="planModal" class="modal" onclick="if(event.target===this) closeModal('planModal')"><div class="modal-content"><div class="modal-header"><h2 id="tituloModalPlan">🎯 Planejar Meta</h2><button class="modal-close" onclick="closeModal('planModal')">✕</button></div><input type="hidden" id="planIdEdicao"><div class="form-group"><label>Descrição da Meta</label><input type="text" id="planDesc"></div><div class="form-row"><div class="form-group"><label>Valor Esperado</label><input type="number" id="planValor" step="0.01"></div><div class="form-group"><label>Data Prevista</label><input type="date" id="planData"></div></div><div class="form-group"><label>Conta de destino da meta quando confirmada</label><select id="planDestino"></select><small class="period-note">Ao confirmar, o valor é creditado uma vez no destino selecionado. Se já cadastrou este mesmo valor como recebimento, evite registrar o crédito duas vezes.</small></div><div class="form-row" id="planFrequenciaBox" style="background:#f7fafc;padding:10px;border-radius:8px;margin-bottom:15px;"><div class="form-group" style="margin-bottom:0;"><label>Frequência (Gerar lotes)</label><select id="planFrequencia" onchange="document.getElementById('grupoPlanVezes').style.display=this.value==='unica'?'none':'block'"><option value="unica">Apenas esta</option><option value="semanal">Semanal</option><option value="quinzenal">Quinzenal</option><option value="mensal">Mensal</option></select></div><div class="form-group" id="grupoPlanVezes" style="display:none;margin-bottom:0;"><label>Qtd Meses/Semanas</label><input type="number" id="planVezes" min="2" value="2"></div></div><button class="btn btn-primary" id="btnSalvarPlan" onclick="salvarPlanejamento()">Salvar Planejamento</button></div></div>
     <div id="categoriaModal" class="modal" onclick="if(event.target===this) closeModal('categoriaModal')"><div class="modal-content"><div class="modal-header"><h2 id="tituloModalCategoria">🏷️ Categoria</h2><button class="modal-close" onclick="closeModal('categoriaModal')">✕</button></div><input type="hidden" id="categoriaIdEdicao"><div class="form-row"><div class="form-group"><label>Nome</label><input type="text" id="catNome"></div><div class="form-group"><label>Cor</label><input type="color" id="catCor" value="#667eea" style="height:42px;padding:5px;"></div></div><div class="form-group"><label>Ícone (Selecione)</label><input type="text" id="catIcone" readonly style="background:#f8fafc;font-size:1.5em;text-align:center;"><div class="icon-grid" id="iconeBiblioteca"></div></div><button class="btn btn-primary" onclick="salvarCategoria()">Salvar Categoria</button></div></div>
 
 
@@ -364,6 +394,8 @@
         <div class="form-group"><label>Descrição / observação</label><input id="trNota" placeholder="Ex.: Depósito, Pix entre contas"></div>
         <p class="period-note">O valor será subtraído da origem e adicionado ao destino. A operação não conta como receita ou despesa.</p><button class="btn btn-primary" onclick="salvarTransferencia()">Confirmar transferência</button></div></div>
 
+    <div id="pagamentoCartaoModal" class="modal" onclick="if(event.target===this)cancelarPagamentoCartao()"><div class="modal-content"><div class="modal-header"><h2>💳 Registrar pagamento da fatura</h2><button class="modal-close" onclick="cancelarPagamentoCartao()">✕</button></div><p class="period-note">Selecione a conta que pagou a fatura. O sistema reduzirá esse saldo e quitará os lançamentos selecionados, sem lançar outra despesa.</p><p id="pagamentoCartaoResumo" style="font-weight:bold;margin-bottom:12px"></p><div class="form-group"><label>Origem do pagamento</label><select id="pagamentoCartaoConta"></select></div><div class="inv-toolbar"><button class="btn btn-primary" onclick="confirmarPagamentoCartao()">Confirmar pagamento</button><button class="btn btn-back" onclick="cancelarPagamentoCartao()">Cancelar</button></div></div></div>
+    <div id="metaDestinoModal" class="modal" onclick="if(event.target===this)closeModal('metaDestinoModal')"><div class="modal-content"><div class="modal-header"><h2>🎯 Confirmar recebimento da meta</h2><button class="modal-close" onclick="closeModal('metaDestinoModal')">✕</button></div><p class="period-note">Selecione onde o valor confirmado entrou. Essa confirmação atualiza o saldo apenas uma vez.</p><input type="hidden" id="metaDestinoId"><div class="form-group"><label>Conta / dinheiro físico de destino</label><select id="metaDestinoConta"></select></div><div class="inv-toolbar"><button class="btn btn-primary" onclick="confirmarMetaNoDestino()">Confirmar recebimento</button><button class="btn btn-back" onclick="closeModal('metaDestinoModal');refresh()">Cancelar</button></div></div></div>
     <script>
         // ==========================================
         // 1. ESTADOS GLOBAIS E INICIALIZAÇÃO
@@ -418,7 +450,8 @@
             dados.planejamentos.forEach(p => { if(!p.id) p.id = uid('plan'); });
 
              if(!dados.zerado) adicionarExemplosV13();
-            restaurarOrdemCards();
+            inicializarEfeitosFinanceiros();
+             restaurarOrdemCards();
             salvarDadosLocal(true); atualizarLabelMes(); setTimeout(refresh, 0);
             initDragAndDrop();
         }
@@ -503,7 +536,9 @@
             let opcoes = tipo==='recebimentos' ? ['Pendente','Recebido','Cancelado'] : tipo==='planejamentos' ? ['Planejado','Confirmado','Cancelado'] : ['Pendente','Pago','Cancelado'];
             if(!opcoes.includes(novo) || !['despesas','recebimentos','planejamentos'].includes(tipo)) return;
             let x=dados[tipo].find(i=>i.id===id); if(!x) return;
-            x.status=novo; salvarDadosLocal(); refresh(); showToast('Status atualizado.');
+                         if(tipo==='planejamentos'&&novo==='Confirmado'&&!destinoFinanceiro(x.contaDestino))return abrirDestinoMeta(id);
+             if(tipo==='despesas'&&novo==='Pago'&&(x.origem||'').startsWith('cartao_')&&!destinoFinanceiro(x.contaPagamento))return abrirPagamentoCartao([x.id]);
+             x.status=novo; salvarDadosLocal(); refresh(); showToast('Status atualizado.');
         };
         function statusControleGrupo(id,itens) {
             let presentes = itens.filter(emPeriodo);
@@ -515,8 +550,13 @@
         }
         window.atualizarStatusGrupo = (id,novo) => {
             if(!['Pendente','Pago','Cancelado'].includes(novo)) return;
-            let grupo=gruposParcelas().get(id); if(!grupo) return;
-            grupo.filter(emPeriodo).forEach(x=>x.status=novo);
+                         let grupo=gruposParcelas().get(id); if(!grupo) return;
+             const parcelas=grupo.filter(emPeriodo);
+             if(novo==='Pago'){
+                 const semPagamento=parcelas.filter(x=>(x.origem||'').startsWith('cartao_')&&situacaoLancamento('despesas',x)!=='Pago'&&!destinoFinanceiro(x.contaPagamento));
+                 if(semPagamento.length)return abrirPagamentoCartao(semPagamento.map(x=>x.id));
+             }
+             parcelas.forEach(x=>x.status=novo);
             salvarDadosLocal(); refresh(); showToast('Status das parcelas do período atualizado.');
         };
 
@@ -559,7 +599,7 @@
             const mantidos=new Set();
             for(let i=0;i<qtd;i++) {
                 const atual=ordenadas[i];
-                const destino=atual||{id:uid(tipo==='despesas'?'desp':'rec')};
+                const destino=atual||{id:uid(tipo==='despesas'?'desp':'rec'),...(tipo==='recebimentos'?{status:'Pendente'}:{})};
                 Object.assign(destino,campos,{
                     titulo: qtd>1?`${tituloBase} (${i+1}/${qtd})`:tituloBase,
                     data:dataOcorrencia(inicio,freq,i),
@@ -607,7 +647,210 @@
             return { grupo, primeiro:grupo[0]||x };
         }
 
-        function getCatDetails(nomeCat) { let c = dados.categorias.find(x => x.nome.toLowerCase() === (nomeCat||'').toLowerCase()); return c ? c : { icon: '📌', cor: '#718096' }; }
+                // Registro da conta de pagamento para baixas de faturas de cartao.
+        // Quitações em grupo guardam o estado de CADA lançamento alterado, inclusive a conta
+        // de pagamento anterior. O histórico integra os dados salvos no próprio HTML.
+        let idsPagamentoCartao=[];
+        let faturaEmQuitacao=null;
+        function chaveQuitacaoFatura(nome,ym){return JSON.stringify([nome,ym]);}
+        function historicoQuitacoes(){
+            if(!dados.historicoQuitacoesFaturas || typeof dados.historicoQuitacoesFaturas!=='object' || Array.isArray(dados.historicoQuitacoesFaturas)) dados.historicoQuitacoesFaturas={};
+            return dados.historicoQuitacoesFaturas;
+        }
+        function abrirPagamentoCartao(ids,contexto=null){
+            idsPagamentoCartao=[...new Set(ids)].filter(id=>dados.despesas.some(x=>x.id===id));
+            faturaEmQuitacao=contexto&&contexto.nome&&/^\d{4}-\d{2}$/.test(contexto.ym)?{nome:contexto.nome,ym:contexto.ym}:null;
+            const itens=dados.despesas.filter(x=>idsPagamentoCartao.includes(x.id)&&situacaoLancamento('despesas',x)!=='Pago');
+            if(!itens.length){faturaEmQuitacao=null;return;}
+            document.getElementById('pagamentoCartaoResumo').textContent=`${itens.length} lançamento(s) · ${money(sum(itens))}`;
+            document.getElementById('pagamentoCartaoConta').innerHTML=destinosMetaOptions('');
+            openModal('pagamentoCartaoModal');
+        }
+        function cancelarPagamentoCartao(){closeModal('pagamentoCartaoModal');idsPagamentoCartao=[];faturaEmQuitacao=null;refresh();}
+        function confirmarPagamentoCartao(){
+            const chave=document.getElementById('pagamentoCartaoConta').value;
+            const itens=dados.despesas.filter(x=>idsPagamentoCartao.includes(x.id)&&situacaoLancamento('despesas',x)!=='Pago');
+            const total=sum(itens),saldo=lerSaldo(chave);
+            if(!itens.length)return cancelarPagamentoCartao();
+            if(!chave||saldo===null)return showToast('Selecione uma conta de pagamento.',true);
+            if(saldo+.005<total)return showToast('Saldo insuficiente para quitar os lançamentos deste cartão.',true);
+            if(faturaEmQuitacao){
+                const historico=historicoQuitacoes(),key=chaveQuitacaoFatura(faturaEmQuitacao.nome,faturaEmQuitacao.ym);
+                const registro=historico[key]||{nome:faturaEmQuitacao.nome,ym:faturaEmQuitacao.ym,originais:[]};
+                for(const x of itens){
+                    if(registro.originais.some(e=>e.id===x.id))continue;
+                    registro.originais.push({id:x.id,tinhaStatus:Object.prototype.hasOwnProperty.call(x,'status'),status:x.status,
+                        tinhaConta:Object.prototype.hasOwnProperty.call(x,'contaPagamento'),contaPagamento:x.contaPagamento});
+                }
+                historico[key]=registro;
+            }
+            itens.forEach(x=>{x.contaPagamento=chave;x.status='Pago';});
+            closeModal('pagamentoCartaoModal');idsPagamentoCartao=[];faturaEmQuitacao=null;
+            salvarDadosLocal();refresh();showToast('Fatura paga; lançamentos atualizados e conta debitada.');
+        }
+        function cancelarQuitacaoFatura(nome,ym){
+            const historico=historicoQuitacoes(),key=chaveQuitacaoFatura(nome,ym),registro=historico[key];
+            if(!registro||!Array.isArray(registro.originais)||!registro.originais.length)return showToast('Não há pagamento em grupo para desfazer.',true);
+            if(!confirm('Cancelar o pagamento desta fatura e restaurar os status anteriores de seus lançamentos? Os saldos serão recalculados.'))return;
+            let restaurados=0;
+            for(const anterior of registro.originais){
+                const x=dados.despesas.find(d=>d.id===anterior.id);
+                if(!x)continue;
+                if(anterior.tinhaStatus)x.status=anterior.status;else delete x.status;
+                if(anterior.tinhaConta)x.contaPagamento=anterior.contaPagamento;else delete x.contaPagamento;
+                restaurados++;
+            }
+            delete historico[key];
+            salvarDadosLocal();refresh();
+            showToast(`${restaurados} lançamento(s) restaurado(s) ao estado anterior. Saldos reconciliados.`);
+        }
+        // V18 - Contabilizacao idempotente. Os saldos existentes sao a referencia inicial.
+        // No primeiro carregamento, as situacoes anteriores sao fotografadas, SEM reaplicar
+        // transacoes antigas. Em mudancas posteriores, aplica apenas a diferenca de efeitos.
+        function situacaoLancamento(tipo,x){
+            return x.status || (tipo==='recebimentos'?'Recebido':tipo==='planejamentos'?'Planejado':'Pendente');
+        }
+        function ativosFinanceiros(tipo,lista){
+            return lista.filter(x=>situacaoLancamento(tipo,x)!=='Cancelado');
+        }
+        function recebimentosRealizados(lista){
+            return lista.filter(x=>situacaoLancamento('recebimentos',x)==='Recebido');
+        }
+        function destinoFinanceiro(chave){
+            if(chave==='fisico'||chave==='dinheiro'||chave==='Dinheiro')return 'fisico';
+            if(chave&&chave.startsWith('conta_'))return 'c:'+chave.slice(6);
+            if(chave&&chave.startsWith('c:'))return chave;
+            if(chave&&dados.contas.some(c=>c.nome===chave))return 'c:'+chave;
+            return '';
+        }
+        function efeitoFinanceiro(tipo,x){
+            const status=situacaoLancamento(tipo,x),valor=Number(x.valor)||0;
+            if(valor<=0) return null;
+            let chave='',sinal=0;
+            if(tipo==='despesas' && status==='Pago'){
+                // Os gastos no cartao nao debitam contas imediatamente.
+                // Sao controlados pelo saldo de faturas pendentes ate sua quitacao.
+                chave=destinoFinanceiro((x.origem||'').startsWith('cartao_')?x.contaPagamento:x.origem);sinal=-1;
+            } else if(tipo==='recebimentos'&&status==='Recebido'){
+                chave=destinoFinanceiro(x.categoriaRecebimento==='Dinheiro'?'fisico':x.conta);sinal=1;
+            } else if(tipo==='planejamentos'&&status==='Confirmado'){
+                chave=destinoFinanceiro(x.contaDestino);sinal=1;
+            }
+            return chave ? {chave,delta:Math.round(sinal*valor*100)/100} : null;
+        }
+        function mapaEfeitosFinanceiros(){
+            const mapa={};
+            for(const tipo of ['despesas','recebimentos','planejamentos']){
+                for(const x of dados[tipo]){
+                    const e=efeitoFinanceiro(tipo,x);
+                    if(e)mapa[tipo+':'+x.id]=e;
+                }
+            }
+            return mapa;
+        }
+        function inicializarEfeitosFinanceiros(){
+            if(!dados.efeitosFinanceiros||typeof dados.efeitosFinanceiros!=='object'||Array.isArray(dados.efeitosFinanceiros)){
+                dados.efeitosFinanceiros=mapaEfeitosFinanceiros();
+            }
+        }
+        function sincronizarEfeitosFinanceiros(){
+            inicializarEfeitosFinanceiros();
+            const anterior=dados.efeitosFinanceiros, novo=mapaEfeitosFinanceiros();
+            const diferencas={};
+            for(const [id, efeito] of Object.entries(anterior))
+                diferencas[efeito.chave]=(diferencas[efeito.chave]||0)-Number(efeito.delta||0);
+            for(const [id, efeito] of Object.entries(novo))
+                diferencas[efeito.chave]=(diferencas[efeito.chave]||0)+Number(efeito.delta||0);
+            for(const [chave,delta] of Object.entries(diferencas)){
+                if(Math.abs(delta)<.005)continue;
+                const atual=lerSaldo(chave);
+                if(atual!==null) definirSaldo(chave,atual+delta);
+            }
+            dados.efeitosFinanceiros=novo;
+        }
+        function destinosMetaOptions(selecionado=''){
+            return '<option value="">Selecione onde o dinheiro entrou</option>'+[
+                {chave:'fisico',nome:'💵 Dinheiro físico'},
+                ...dados.contas.map(c=>({chave:'c:'+c.nome,nome:'🏦 '+c.nome}))
+            ].map(c=>`<option value="${esc(c.chave)}" ${selecionado===c.chave?'selected':''}>${esc(c.nome)}</option>`).join('');
+        }
+        function abrirDestinoMeta(id){
+            const x=dados.planejamentos.find(x=>x.id===id);if(!x)return;
+            document.getElementById('metaDestinoId').value=id;
+            document.getElementById('metaDestinoConta').innerHTML=destinosMetaOptions(x.contaDestino||'');
+            openModal('metaDestinoModal');
+        }
+        function confirmarMetaNoDestino(){
+            const x=dados.planejamentos.find(x=>x.id===document.getElementById('metaDestinoId').value);
+            const destino=document.getElementById('metaDestinoConta').value;
+            if(!x||!destino||lerSaldo(destino)===null)return showToast('Selecione um destino existente.',true);
+            x.contaDestino=destino; x.status='Confirmado';
+            closeModal('metaDestinoModal');salvarDadosLocal();refresh();showToast('Meta confirmada e saldo atualizado.');
+        }
+        function mudarDestinoMeta(id,novo){
+            const x=dados.planejamentos.find(x=>x.id===id);if(!x||!novo)return;
+            x.contaDestino=novo;salvarDadosLocal();refresh();showToast('Destino atualizado.');
+        }
+        function atualizarVisibilidadeParcelas(){
+            const origem=document.getElementById('despesaOrigem').value||'';
+            const cartao=origem.startsWith('cartao_')&&dados.cartoes.some(c=>'cartao_'+c.nome===origem);
+            const box=document.getElementById('despesaParcelasBox'), input=document.getElementById('despesaParcelas');
+            const edicao=!!document.getElementById('despesaIdEdicao').value;
+            box.hidden=!cartao||edicao;
+            input.disabled=!cartao||edicao;
+            if(!cartao&&!edicao)input.value='1';
+        }
+        function hojeFinanceiro(){
+            const d=new Date();return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+        }
+        function dataFaturaCartao(c,ym=getGlobalTargetYM()){
+            const [a,m]=ym.split('-').map(Number),fim=new Date(a,m,0).getDate();
+            const dia=Math.min(fim,Math.max(1,Math.trunc(Number(c.vencimento)||1)));
+            return `${a}-${String(m).padStart(2,'0')}-${String(dia).padStart(2,'0')}`;
+        }
+        function prazoFatura(c,ym=getGlobalTargetYM()){
+            const data=dataFaturaCartao(c,ym);
+            const diff=Math.round((new Date(data+'T12:00:00')-new Date(hojeFinanceiro()+'T12:00:00'))/86400000);
+            const texto=diff>0?(diff===1?'Falta 1 dia':`Faltam ${diff} dias`):diff===0?'Vence hoje':`Vencimento há ${Math.abs(diff)} dia${Math.abs(diff)===1?'':'s'}`;
+            return {data,dias:diff,texto};
+        }
+        // Cor baseada no prazo para pagamento, somente quando a fatura possui valor pendente.
+        // 16 dias ou mais: azul; 8-15: amarelo; 4-7: laranja; 3 ou menos: vermelho.
+        function indicadorVencimentoCartao(c,ym=getGlobalTargetYM()){
+            const prazo=prazoFatura(c,ym);
+            const pendente=resumoFatura(c,ym).pendente;
+            if(pendente<=0.005) return {...prazo,pendente:0,texto:'Sem Faturas',classe:'invoice-deadline--green'};
+            const classe=prazo.dias>=16?'invoice-deadline--blue':
+                prazo.dias>=8?'invoice-deadline--yellow':
+                prazo.dias>=4?'invoice-deadline--orange':'invoice-deadline--red';
+            return {...prazo,pendente,classe};
+        }
+        function badgeVencimentoCartao(indicador){
+            return `<span class="invoice-deadline ${indicador.classe}" role="status">${esc(indicador.texto)}</span>`;
+        }
+        function kpiVencimentoCartao(c,ym=getGlobalTargetYM()){
+            const info=indicadorVencimentoCartao(c,ym);
+            return `<div class="ctx-kpi"><small>Vencimento</small><strong class="invoice-kpi-date">${formatarData(info.data)}</strong><div class="invoice-kpi-status">${badgeVencimentoCartao(info)}</div></div>`;
+        }
+        function itensFaturaCartao(c,ym=getGlobalTargetYM()){
+            return dados.despesas.filter(x=>x.origem==='cartao_'+c.nome&&x.data?.slice(0,7)===ym&&situacaoLancamento('despesas',x)!=='Cancelado');
+        }
+        function totalAbertoFatura(itens){return sum(itens.filter(x=>situacaoLancamento('despesas',x)!=='Pago'));}
+        function resumoFatura(c,ym=getGlobalTargetYM()){
+            const itens=itensFaturaCartao(c,ym);
+            return {itens,total:sum(itens),pendente:totalAbertoFatura(itens),pago:sum(itens.filter(x=>situacaoLancamento('despesas',x)==='Pago')),prazo:prazoFatura(c,ym)};
+        }
+        function alterarStatusFatura(nome,ym,novo){
+            if(novo==='Pendente')return cancelarQuitacaoFatura(nome,ym);
+            if(novo!=='Pago')return;
+            const c=dados.cartoes.find(x=>x.nome===nome);if(!c)return;
+            const itens=itensFaturaCartao(c,ym);
+            const pendentes=itens.filter(x=>situacaoLancamento('despesas',x)!=='Pago');
+            if(!pendentes.length)return showToast('Não há lançamentos pendentes nesta fatura.',true);
+            return abrirPagamentoCartao(pendentes.map(x=>x.id),{nome,ym});
+        }
+
+         function getCatDetails(nomeCat) { let c = dados.categorias.find(x => x.nome.toLowerCase() === (nomeCat||'').toLowerCase()); return c ? c : { icon: '📌', cor: '#718096' }; }
 
         // ==========================================
         // DRAG AND DROP (ORDENAÇÃO DOS CARDS)
@@ -690,6 +933,7 @@
             else if(visao === 'detalhe_plan') renderDetalhePlan(itemAtual);
             else if(visao === 'detalhe_conta') renderDetalheConta(itemAtual);
             else if(visao === 'detalhe_cartao') renderDetalheCartao(itemAtual);
+             else if(visao === 'detalhe_fatura') renderDetalheFatura(itemAtual);
             else if(visao === 'detalhe_cartoes_kpi') renderDetalheIndicadorCartoes(itemAtual);
             else if(visao === 'detalhe_parcelamento') renderDetalheParcelamento(itemAtual);
              else if(visao === 'detalhe_resumo') renderCorrespondencias(itemAtual);
@@ -711,7 +955,7 @@
 
         function renderPrincipal() {
             header('📊 Visão Geral', null);
-            const d=dados.despesas.filter(emPeriodo), r=dados.recebimentos.filter(emPeriodo), p=dados.planejamentos.filter(emPeriodo);
+                         const d=ativosFinanceiros('despesas',dados.despesas.filter(emPeriodo)), r=recebimentosRealizados(dados.recebimentos.filter(emPeriodo)), p=ativosFinanceiros('planejamentos',dados.planejamentos.filter(emPeriodo));
             const totalDespesasMes=sum(d), totalReceitas=sum(r);
             const ord=agrupar(d,'categoria').sort((a,b)=>b[1]-a[1]);
             let acc=0,gradientStr='background:#edf2f7;';
@@ -722,8 +966,8 @@
             const acaoKpi=(titulo,valor,tipo,estilo='')=>`<div class="ctx-kpi kpi-action" role="button" tabindex="0" title="Ver lançamentos, datas e valores" onclick="selecionarVisao('detalhe_resumo','${tipo}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"><small>${titulo}</small><strong ${estilo?`style="${estilo}"`:''}>${money(valor)}</strong></div>`;
             document.getElementById('contextContent').innerHTML=`
                 <div class="ctx-kpis">
-                    ${acaoKpi('Receitas no Período',totalReceitas,'receitas','color:var(--ok)')}
-                    ${acaoKpi('Despesas no Período',totalDespesasMes,'despesas','color:var(--bad)')}
+                    ${acaoKpi('Recebimentos realizados',totalReceitas,'receitas','color:var(--ok)')}
+                    ${acaoKpi('Despesas ativas no período',totalDespesasMes,'despesas','color:var(--bad)')}
                     ${acaoKpi('Saldo do Período',totalReceitas-totalDespesasMes,'saldo')}
                     ${acaoKpi('Metas no Período',sum(p),'metas')}
                 </div>
@@ -751,7 +995,7 @@
             const x=event.clientX-rect.left-rect.width/2, y=event.clientY-rect.top-rect.height/2;
             const ang=(Math.atan2(x,-y)*180/Math.PI+360)%360;
             let total=0;
-            const ord=agrupar(dados.despesas.filter(emPeriodo),'categoria').sort((a,b)=>b[1]-a[1]);
+            const ord=agrupar(ativosFinanceiros('despesas',dados.despesas.filter(emPeriodo)),'categoria').sort((a,b)=>b[1]-a[1]);
             const soma=ord.reduce((v,x)=>v+x[1],0);
             for(const [nome,v] of ord) { total+=v/soma*360; if(ang<=total) return selecionarVisao('detalhe_categoria',nome); }
         };
@@ -759,36 +1003,74 @@
             const porCategoria=visao==='detalhe_categoria';
             let titulo=porCategoria?`Despesas: ${param}`:({receitas:'Receitas',despesas:'Despesas',saldo:'Saldo do Período',metas:'Metas'}[param]||'Correspondências');
             const itens=[];
-            if(porCategoria||param==='despesas'||param==='saldo') dados.despesas.filter(x=>emPeriodo(x)&&(!porCategoria||x.categoria===param)).forEach(x=>itens.push({x,tipo:'despesas',sinal:-1}));
-            if(!porCategoria&&(param==='receitas'||param==='saldo')) dados.recebimentos.filter(emPeriodo).forEach(x=>itens.push({x,tipo:'recebimentos',sinal:1}));
-            if(!porCategoria&&param==='metas') dados.planejamentos.filter(emPeriodo).forEach(x=>itens.push({x,tipo:'planejamentos',sinal:1}));
+            if(porCategoria||param==='despesas'||param==='saldo') dados.despesas.filter(x=>emPeriodo(x)&&situacaoLancamento('despesas',x)!=='Cancelado'&&(!porCategoria||x.categoria===param)).forEach(x=>itens.push({x,tipo:'despesas',sinal:-1}));
+            if(!porCategoria&&(param==='receitas'||param==='saldo')) recebimentosRealizados(dados.recebimentos.filter(emPeriodo)).forEach(x=>itens.push({x,tipo:'recebimentos',sinal:1}));
+            if(!porCategoria&&param==='metas') ativosFinanceiros('planejamentos',dados.planejamentos.filter(emPeriodo)).forEach(x=>itens.push({x,tipo:'planejamentos',sinal:1}));
             itens.sort((a,b)=>b.x.data.localeCompare(a.x.data));
             const total=itens.reduce((v,i)=>v+i.sinal*Number(i.x.valor||0),0);
             header('📊 '+titulo,null,'CORRESPONDÊNCIAS DO PERÍODO');
             document.getElementById('contextContent').innerHTML=`<div class="ctx-kpis">${kpi('Total correspondente',money(porCategoria?-total:total))}${kpi('Quantidade de lançamentos',itens.length)}</div><p class="period-note">Lançamentos e datas que compõem o valor selecionado. Clique em um lançamento para inspecionar ou altere seu status diretamente na tabela.</p><div class="ctx-box"><table><thead><tr><th>Data</th><th>Lançamento</th><th>Categoria / Origem</th><th>Status</th><th>Valor</th></tr></thead><tbody>${itens.length?itens.map(({x,tipo,sinal})=>`<tr class="clickable-row" onclick="${chamada(tipo==='despesas'?'detalhe_despesa':tipo==='recebimentos'?'detalhe_recebimento':'detalhe_plan',x.id)}"><td>${formatarData(x.data)}</td><td><strong>${esc(x.titulo||x.descricao)}</strong></td><td>${esc(tipo==='despesas'?x.categoria:tipo==='recebimentos'?x.conta:'Meta')}</td><td>${statusControle(tipo,x)}</td><td style="color:${sinal<0?'var(--bad)':'var(--ok)'}"><strong>${sinal<0?'−':'+'} ${money(x.valor)}</strong></td></tr>`).join(''):'<tr><td colspan="5" class="ctx-empty">Nenhum lançamento no período.</td></tr>'}</tbody></table></div>`;
         }
 
-                function renderCalendario() {
-            header('📅 Calendário', null, 'AGENDA DE LANÇAMENTOS');
-            let ym=getGlobalTargetYM();
-            const itensMes=[...dados.despesas.map(x=>({x,tipo:'despesas'})),...dados.recebimentos.map(x=>({x,tipo:'recebimentos'})),...dados.planejamentos.map(x=>({x,tipo:'planejamentos'}))].filter(i=>i.x.data && i.x.data.slice(0,7)===ym);
-            let mapDias={}; itensMes.forEach(i=>{let d=Number(i.x.data.slice(8,10));(mapDias[d]??=[]).push(i)});
-            let firstDay=new Date(globalAno,globalMes,1).getDay(), daysInMonth=new Date(globalAno,globalMes+1,0).getDate(), gridHtml='';
-            for(let i=0;i<firstDay;i++) gridHtml+='<div class="cal-day empty"></div>';
-            for(let d=1;d<=daysInMonth;d++) {
-                let itens=mapDias[d]||[], isToday=ym===today().slice(0,7)&&d===Number(today().slice(8,10));
-                let badges=itens.map(({x,tipo})=>{
-                    let out=tipo==='despesas', rec=tipo==='recebimentos';
-                    let texto=x.titulo||x.descricao||'Lançamento';
-                    let exibido=calendarioExibicao==='titulo'?texto:(out?'− ':rec?'+ ':'🎯 ')+(out||rec?money(x.valor):money(x.valor));
+                                 function renderCalendario() {
+            header('📅 Calendário',null,'AGENDA DE LANÇAMENTOS');
+            const ym=getGlobalTargetYM();
+            // Compras e parcelas em cartao sao exibidas uma unica vez no badge da fatura,
+            // evitando badges duplicados na data de cada compra.
+            const lancamentos=[
+                ...dados.despesas.filter(x=>!(x.origem||'').startsWith('cartao_')).map(x=>({x,tipo:'despesas'})),
+                ...dados.recebimentos.map(x=>({x,tipo:'recebimentos'})),
+                ...dados.planejamentos.map(x=>({x,tipo:'planejamentos'}))
+            ].filter(i=>i.x.data?.slice(0,7)===ym&&situacaoLancamento(i.tipo,i.x)!=='Cancelado');
+            const mapDias={};
+            lancamentos.forEach(i=>{const dia=Number(i.x.data.slice(8,10));(mapDias[dia]??=[]).push(i)});
+            const mapFaturas={};
+            dados.cartoes.forEach(c=>{
+                const f=resumoFatura(c,ym),dia=Number(f.prazo.data.slice(-2));
+                (mapFaturas[dia]??=[]).push({c,f});
+            });
+            const firstDay=new Date(globalAno,globalMes,1).getDay();
+            const daysInMonth=new Date(globalAno,globalMes+1,0).getDate();
+            let gridHtml='';
+            for(let i=0;i<firstDay;i++)gridHtml+='<div class="cal-day empty"></div>';
+            for(let dia=1;dia<=daysInMonth;dia++){
+                const itens=mapDias[dia]||[];
+                const isToday=ym===hojeFinanceiro().slice(0,7)&&dia===Number(hojeFinanceiro().slice(-2));
+                const badges=itens.map(({x,tipo})=>{
+                    const out=tipo==='despesas',rec=tipo==='recebimentos',texto=x.titulo||x.descricao||'Lançamento';
+                    const exibido=calendarioExibicao==='titulo'?texto:(out?'− ':rec?'+ ':'🎯 ')+money(x.valor);
                     return `<div class="cal-badge ${out?'bdg-out':rec?'bdg-in':''}" style="${!out&&!rec?'background:#3182ce':''}" title="${esc(texto)} — ${money(x.valor)}" onclick="event.stopPropagation();${chamada(out?'detalhe_despesa':rec?'detalhe_recebimento':'detalhe_plan',x.id)}">${esc(exibido)}</div>`;
                 }).join('');
-                gridHtml+=`<div onclick="alterarModo('dia'); selecionarPeriodo('${ym}-${String(d).padStart(2,'0')}')" class="cal-day ${modoPeriodo==='dia'&&d===globalDia?'selected-day':isToday?'s-hoje':''}"><span class="cal-date">${d}</span><div style="display:flex;flex-direction:column;gap:2px">${badges}</div></div>`;
+                const faturas=(mapFaturas[dia]||[]).map(({c,f})=>{
+                    const classe=!f.itens.length?'is-empty':f.pendente<=.005?'is-settled':'';
+                    const texto=calendarioExibicao==='titulo'?`💳 Fatura ${c.nome}`:`💳 ${c.nome}: ${money(f.pendente)}`;
+                    return `<div class="cal-badge invoice-badge ${classe}" role="button" tabindex="0" title="Fatura ${esc(c.nome)} · vencimento ${formatarData(f.prazo.data)} · ${f.itens.length} lançamento(s) · pendente ${money(f.pendente)}" onclick="event.stopPropagation();${chamada('detalhe_fatura',encodeURIComponent(c.nome)+'|'+ym)}">${esc(texto)}</div>`;
+                }).join('');
+                gridHtml+=`<div onclick="alterarModo('dia'); selecionarPeriodo('${ym}-${String(dia).padStart(2,'0')}')" class="cal-day ${modoPeriodo==='dia'&&dia===globalDia?'selected-day':isToday?'s-hoje':''}"><span class="cal-date">${dia}</span><div style="display:flex;flex-direction:column;gap:2px">${badges}${faturas}</div></div>`;
             }
-            const filtro=`<div class="table-toolbar" style="margin-bottom:15px"><label for="calDisplayMode" style="margin:0">Mostrar nos lançamentos</label><select id="calDisplayMode" style="max-width:230px;flex:0 1 230px" onchange="alterarExibicaoCalendario(this.value)"><option value="valor" ${calendarioExibicao==='valor'?'selected':''}>Valores</option><option value="titulo" ${calendarioExibicao==='titulo'?'selected':''}>Títulos dos itens</option></select></div>`;
-            document.getElementById('contextContent').innerHTML=graficoBarras('Movimentação no período',[['Recebimentos',sum(dados.recebimentos.filter(emPeriodo))],['Despesas',sum(dados.despesas.filter(emPeriodo))],['Metas',sum(dados.planejamentos.filter(emPeriodo))]])+filtro+`<div class="calendar-wrapper"><div class="calendar-header"><div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div></div><div class="calendar-grid">${gridHtml}</div></div>`;
+            const filtro=`<div class="table-toolbar" style="margin-bottom:15px"><label for="calDisplayMode" style="margin:0">Mostrar nos lançamentos</label><select id="calDisplayMode" style="max-width:230px;flex:0 1 230px" onchange="alterarExibicaoCalendario(this.value)"><option value="valor" ${calendarioExibicao==='valor'?'selected':''}>Valores</option><option value="titulo" ${calendarioExibicao==='titulo'?'selected':''}>Títulos dos itens</option></select><span class="period-note" style="margin:0">💳 Compras no cartão agrupadas pelo vencimento da fatura.</span></div>`;
+            document.getElementById('contextContent').innerHTML=graficoBarras('Movimentação no período',[
+                ['Recebimentos',sum(recebimentosRealizados(dados.recebimentos.filter(emPeriodo)))],
+                ['Despesas',sum(ativosFinanceiros('despesas',dados.despesas.filter(emPeriodo)))],
+                ['Metas',sum(ativosFinanceiros('planejamentos',dados.planejamentos.filter(emPeriodo)))]]
+            )+filtro+`<div class="calendar-wrapper"><div class="calendar-header"><div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div></div><div class="calendar-grid">${gridHtml}</div></div>`;
         }
-        window.alterarExibicaoCalendario = modo => { if(['valor','titulo'].includes(modo)){calendarioExibicao=modo;renderCalendario();} };
+        function renderDetalheFatura(param){
+            const [codigo,ym]=String(param||'').split('|');
+            const nome=decodeURIComponent(codigo||'');
+            const c=dados.cartoes.find(x=>x.nome===nome);
+            if(!c||!/^[0-9]{4}-[0-9]{2}$/.test(ym))return navegarVoltar();
+            const f=resumoFatura(c,ym), pend=f.pendente;
+            header('💳 Fatura — '+c.nome,null,'CRONOGRAMA DA FATURA');
+            const itens=[...f.itens].sort((a,b)=>a.data.localeCompare(b.data));
+            document.getElementById('contextContent').innerHTML=`<p class="period-note">Cobranças registradas em ${ym.slice(5)}/${ym.slice(0,4)}, agrupadas na data de vencimento. Alterar um status recalcula os valores em aberto e os saldos aplicáveis.</p>
+            <div class="ctx-kpis">${kpi('Vencimento',formatarData(f.prazo.data))}${kpi('Dias até o pagamento',f.prazo.texto)}${kpi('Total da fatura',money(f.total))}${kpi('Fatura pendente',money(pend))}</div>
+            <div class="ctx-kpis">${kpi('Lançamentos',itens.length)}${kpi('Já pago',money(f.pago))}</div>
+            <div class="inv-toolbar"><button type="button" class="btn btn-back" onclick="${chamada('detalhe_cartao',c.nome)}">Ver cartão</button>${itens.length&&f.pendente>.005?`<button type="button" class="btn btn-primary" onclick="${esc(`alterarStatusFatura(${JSON.stringify(nome)},${JSON.stringify(ym)},'Pago')`)}">✓ Marcar como Fatura paga</button>`:''}${historicoQuitacoes()[chaveQuitacaoFatura(nome,ym)]?.originais?.length?`<button type="button" class="btn btn-danger" onclick="${esc(`cancelarQuitacaoFatura(${JSON.stringify(nome)},${JSON.stringify(ym)})`)}">↩ Cancelar pagamento da fatura</button>`:''}</div>
+            <div class="ctx-box"><div class="invoice-list-header"><h3>Composição da fatura</h3><strong>${money(f.total)}</strong></div><table><thead><tr><th>Data do lançamento</th><th>Descrição</th><th>Categoria</th><th>Status</th><th>Valor</th><th>Detalhes</th></tr></thead><tbody>${itens.length?itens.map(x=>`<tr class="clickable-row" onclick="${chamada('detalhe_despesa',x.id)}"><td>${formatarData(x.data)}</td><td><strong>${esc(x.titulo)}</strong></td><td>${esc(x.categoria||'—')}</td><td>${statusControle('despesas',x)}</td><td>${money(x.valor)}</td><td>Inspecionar →</td></tr>`).join(''):'<tr><td colspan="6" class="ctx-empty">Nenhuma compra registrada nesta fatura.</td></tr>'}</tbody></table></div>`;
+        }
+
+window.alterarExibicaoCalendario = modo => { if(['valor','titulo'].includes(modo)){calendarioExibicao=modo;renderCalendario();} };
 
                 function renderSimple(type) {
             const conf={
@@ -856,8 +1138,8 @@
             }
             if(!meses.length){svg.innerHTML='';return;}
             const indice=Object.fromEntries(meses.map((item,i)=>[item.ym,i]));
-            dados.recebimentos.forEach(x=>{if(x.data>=inicio&&x.data<=fim&&indice[x.data.slice(0,7)]!==undefined) meses[indice[x.data.slice(0,7)]].rec.push(x)});
-            dados.despesas.forEach(x=>{if(x.data>=inicio&&x.data<=fim&&indice[x.data.slice(0,7)]!==undefined) meses[indice[x.data.slice(0,7)]].des.push(x)});
+            recebimentosRealizados(dados.recebimentos).forEach(x=>{if(x.data>=inicio&&x.data<=fim&&indice[x.data.slice(0,7)]!==undefined) meses[indice[x.data.slice(0,7)]].rec.push(x)});
+            ativosFinanceiros('despesas',dados.despesas).forEach(x=>{if(x.data>=inicio&&x.data<=fim&&indice[x.data.slice(0,7)]!==undefined) meses[indice[x.data.slice(0,7)]].des.push(x)});
             let series=[];
             if(metric==='fluxo') series=[{n:'Entradas',c:'#22a06b',v:meses.map(x=>sum(x.rec))},{n:'Saídas',c:'#e25555',v:meses.map(x=>sum(x.des))}];
             else {let parcial=0;series=[{n:'Progressão do Saldo',c:'#667eea',v:meses.map(x=>parcial+=sum(x.rec)-sum(x.des))}]}
@@ -952,7 +1234,8 @@
             document.getElementById('despesaData').value=serie?(base.inicioRecorrencia||base.data):(x?.data||today());
             document.getElementById('despesaCategoria').value=x?.categoria||dados.categorias[0]?.nome||'';
             document.getElementById('despesaOrigem').value=x?.origem||(dados.contas.length?'conta_'+dados.contas[0].nome:'dinheiro');
-            document.getElementById('despesaParcelasBox').style.display=x?'none':'block';
+            document.getElementById('despesaParcelas').value=x?.parcelas||1;
+             atualizarVisibilidadeParcelas();
             document.getElementById('despesaFrequenciaBox').style.display='grid';
             document.getElementById('despesaFrequencia').value=serie?(base.frequenciaRecorrencia||'mensal'):'unica';
             document.getElementById('despesaVezes').value=serie?serie.grupo.length:2;
@@ -974,9 +1257,9 @@
             const soUma=!!serie&&document.getElementById('despesaEscopo').value==='unica';
             const campos={titulo,valor,data,categoria,origem};
             if(soUma) Object.assign(atual,campos);
-            else if(serie||opts.freq!=='unica'&&opts.qtd>1) salvarSerie('despesas',atual,{categoria,origem,valor,parcelas:atual?.parcelas||Number(document.getElementById('despesaParcelas').value)||1},opts.freq,opts.qtd,data,titulo);
+            else if(serie||opts.freq!=='unica'&&opts.qtd>1) salvarSerie('despesas',atual,{categoria,origem,valor,parcelas:origem.startsWith('cartao_')?(atual?.parcelas||Number(document.getElementById('despesaParcelas').value)||1):1},opts.freq,opts.qtd,data,titulo);
             else if(atual) Object.assign(atual,campos);
-            else dados.despesas.push({id:uid('desp'),...campos,parcelas:Number(document.getElementById('despesaParcelas').value)||1});
+            else dados.despesas.push({id:uid('desp'),...campos,parcelas:origem.startsWith('cartao_')?(Number(document.getElementById('despesaParcelas').value)||1):1});
             fecharERecarregar('despesaModal',atual?'Atualizado!':'Criado!',id?'detalhe_despesa':'despesas',id||null);
         };
 
@@ -1024,25 +1307,26 @@
             if(soUma) Object.assign(atual,campos);
             else if(serie||opts.freq!=='unica'&&opts.qtd>1) salvarSerie('recebimentos',atual,{valor,categoriaRecebimento,conta},opts.freq,opts.qtd,data,titulo);
             else if(atual) Object.assign(atual,campos);
-            else dados.recebimentos.push({id:uid('rec'),...campos});
+            else dados.recebimentos.push({id:uid('rec'),...campos,status:'Pendente'});
             fecharERecarregar('recebimentoModal',atual?'Atualizado!':'Criado!',id?'detalhe_recebimento':'recebimentos',id||null);
         };
 
                 function renderDetalhePlan(id) {
             const x=dados.planejamentos.find(d=>d.id===id);if(!x)return navegarVoltar();
             header('🎯 Detalhe da Meta',null,'DETALHE DA META');
-            document.getElementById('contextContent').innerHTML=`<div class="ctx-box"><h2 style="margin-bottom:20px;color:var(--alert-blue)">🎯 ${esc(x.descricao)}</h2><div class="ctx-grid"><div class="detail-group"><h3>Dados</h3>${campoDetalhe('planejamentos',x,'descricao','Descrição')}${campoDetalhe('planejamentos',x,'valor','Valor Esperado')}${campoDetalhe('planejamentos',x,'data','Previsto para')}</div><div class="detail-group"><h3>Situação</h3><div class="ctx-row"><span>Status</span>${statusControle('planejamentos',x)}</div></div></div><div style="margin-top:20px;text-align:right"><button class="btn btn-danger" onclick="excluirItem('planejamentos','${esc(x.id)}')">🗑️ Excluir Permanentemente</button></div></div>`;
+            document.getElementById('contextContent').innerHTML=`<div class="ctx-box"><h2 style="margin-bottom:20px;color:var(--alert-blue)">🎯 ${esc(x.descricao)}</h2><div class="ctx-grid"><div class="detail-group"><h3>Dados</h3>${campoDetalhe('planejamentos',x,'descricao','Descrição')}${campoDetalhe('planejamentos',x,'valor','Valor Esperado')}${campoDetalhe('planejamentos',x,'data','Previsto para')}</div><div class="detail-group"><h3>Situação</h3><div class="ctx-row"><span>Status</span>${statusControle('planejamentos',x)}</div><div class="ctx-row"><span>Destino quando confirmado</span><select class="status-select" aria-label="Selecionar conta de destino da meta" onchange="mudarDestinoMeta('${esc(x.id)}',this.value)">${destinosMetaOptions(x.contaDestino||'')}</select></div></div></div><div style="margin-top:20px;text-align:right"><button class="btn btn-danger" onclick="excluirItem('planejamentos','${esc(x.id)}')">🗑️ Excluir Permanentemente</button></div></div>`;
         }
 
                 function abrirModalPlan(id = null) {
             if(id) { let x = dados.planejamentos.find(d => d.id === id); document.getElementById('tituloModalPlan').textContent = '✏️ Editar'; document.getElementById('planIdEdicao').value = x.id; document.getElementById('planDesc').value = x.descricao; document.getElementById('planValor').value = x.valor; document.getElementById('planData').value = x.data; document.getElementById('planFrequenciaBox').style.display = 'none'; } else { document.getElementById('tituloModalPlan').textContent = '🎯 Novo Planejamento'; document.getElementById('planIdEdicao').value = ''; document.getElementById('planData').value = today(); document.getElementById('planFrequenciaBox').style.display = 'grid'; }
-            openModal('planModal');
+                         document.getElementById('planDestino').innerHTML=destinosMetaOptions(id?dados.planejamentos.find(x=>x.id===id)?.contaDestino||'':'');
+             openModal('planModal');
         }
 
         window.salvarPlanejamento = () => {
-            let id = document.getElementById('planIdEdicao').value, t = document.getElementById('planDesc').value, v = Number(document.getElementById('planValor').value)||0, d = document.getElementById('planData').value;
+            let id = document.getElementById('planIdEdicao').value, t = document.getElementById('planDesc').value, v = Number(document.getElementById('planValor').value)||0, d = document.getElementById('planData').value, destino=document.getElementById('planDestino').value;
             if(!t || v<=0 || !d) return showToast('Preencha os campos', true);
-            if(id) { let idx = dados.planejamentos.findIndex(x => x.id === id); if(idx > -1) { dados.planejamentos[idx].descricao = t; dados.planejamentos[idx].valor = v; dados.planejamentos[idx].data = d; } fecharERecarregar('planModal', 'Atualizado!', 'detalhe_plan', id); } else { let freq = document.getElementById('planFrequencia').value, vezes = freq === 'unica' ? 1 : (Number(document.getElementById('planVezes').value) || 1); for(let i=0; i<vezes; i++) { let dObj = new Date(d+'T12:00:00'); if(freq==='semanal') dObj.setDate(dObj.getDate()+(7*i)); if(freq==='quinzenal') dObj.setDate(dObj.getDate()+(15*i)); if(freq==='mensal') dObj.setMonth(dObj.getMonth()+i); dados.planejamentos.push({ id: uid('plan'), descricao: vezes>1?`${t} (${i+1}/${vezes})`:t, valor: v, data: dObj.toISOString().slice(0,10), status: 'Planejado' }); } fecharERecarregar('planModal', 'Criado!', 'planejamento'); }
+            if(id) { let idx = dados.planejamentos.findIndex(x => x.id === id); if(idx > -1) { dados.planejamentos[idx].descricao = t; dados.planejamentos[idx].valor = v; dados.planejamentos[idx].data = d; dados.planejamentos[idx].contaDestino=destino; } fecharERecarregar('planModal', 'Atualizado!', 'detalhe_plan', id); } else { let freq = document.getElementById('planFrequencia').value, vezes = freq === 'unica' ? 1 : (Number(document.getElementById('planVezes').value) || 1); for(let i=0; i<vezes; i++) { let dObj = new Date(d+'T12:00:00'); if(freq==='semanal') dObj.setDate(dObj.getDate()+(7*i)); if(freq==='quinzenal') dObj.setDate(dObj.getDate()+(15*i)); if(freq==='mensal') dObj.setMonth(dObj.getMonth()+i); dados.planejamentos.push({ id: uid('plan'), descricao: vezes>1?`${t} (${i+1}/${vezes})`:t, valor: v, data: dObj.toISOString().slice(0,10), status: 'Planejado',contaDestino:destino }); } fecharERecarregar('planModal', 'Criado!', 'planejamento'); }
         }
 
         window.excluirItem = (arrStr, id) => { if(confirm('Excluir este item?')) { let idx = dados[arrStr].findIndex(x => x.id === id); if(idx > -1) dados[arrStr].splice(idx, 1); salvarDadosLocal(); selecionarVisao(arrStr==='planejamentos'?'planejamento':arrStr); refresh(); showToast('Apagado.'); } }
@@ -1078,31 +1362,33 @@
             if(!confirm('Confirma zerar o painel inteiro? Se fechar sem salvar o arquivo, os dados anteriores serão recuperados ao abri-lo novamente.')) return;
             // Não sobrescrever o armazenamento local agora: fechar sem salvar deve restaurar os dados anteriores.
             dados={contas:[],cartoes:[],despesas:[],recebimentos:[],planejamentos:[],categorias:[],investimentos:[],transferencias:[],tiposInvestimento:[],dinheiroFisico:0,navOrder:[],timestamp:0,exemplosV13:true,zerado:true};
-            historicoVisoes=[]; visao='principal'; itemAtual=null;
+                         dados.efeitosFinanceiros={};
+historicoVisoes=[]; visao='principal'; itemAtual=null;
             marcarAlteracao(); refresh();
             alert('O painel foi zerado nesta sessão. Para tornar a exclusão definitiva, clique em "Salvar Arquivo" e salve novamente o HTML. Se fechar sem salvar, o arquivo original continuará com os dados anteriores.');
         };
 
         function refresh() {
-            garantirModulos();
-            document.getElementById('totalInvestimentos').textContent=money(resumoCarteira().valor);
+             garantirModulos();
+             sincronizarEfeitosFinanceiros();
+             document.getElementById('totalInvestimentos').textContent=money(resumoCarteira().valor);
             document.getElementById('totalTransferencias').textContent=dados.transferencias.length;
             let ym = getGlobalTargetYM();
             document.getElementById('totalContas').textContent = dados.contas.length; 
             document.getElementById('totalCartoes').textContent = dados.cartoes.length;
             document.getElementById('totalCategorias').textContent = dados.categorias.length;
-            document.getElementById('totalDespesas').textContent = money(sum(dados.despesas.filter(emPeriodo)));
-            document.getElementById('totalRecebimentos').textContent = money(sum(dados.recebimentos.filter(emPeriodo)));
-            document.getElementById('totalPlanejado').textContent = money(sum(dados.planejamentos.filter(emPeriodo)));
+            document.getElementById('totalDespesas').textContent = money(sum(ativosFinanceiros('despesas',dados.despesas.filter(emPeriodo))));
+            document.getElementById('totalRecebimentos').textContent = money(sum(recebimentosRealizados(dados.recebimentos.filter(emPeriodo))));
+            document.getElementById('totalPlanejado').textContent = money(sum(ativosFinanceiros('planejamentos',dados.planejamentos.filter(emPeriodo))));
             
             let real = Number(dados.dinheiroFisico) + sum(dados.contas, 'saldo'); let f = totalFaturasMes();
             document.getElementById('saldoFisico').textContent = money(dados.dinheiroFisico);
             document.getElementById('saldoDigital').textContent = money(sum(dados.contas, 'saldo'));
-            document.getElementById('saldoFaturas').textContent = "- " + money(f);
+            document.getElementById('saldoFaturas').textContent = '- ' + money(f);
             document.getElementById('saldoGeral').textContent = money(real - f);
 
-            document.getElementById('navGeral').textContent=money(sum(dados.recebimentos.filter(emPeriodo))-sum(dados.despesas.filter(emPeriodo)));
-            document.getElementById('totalParcelas').textContent=dados.despesas.filter(x=>x.parcelas>1 && emPeriodo(x)).length;
+            document.getElementById('navGeral').textContent=money(sum(recebimentosRealizados(dados.recebimentos.filter(emPeriodo)))-sum(ativosFinanceiros('despesas',dados.despesas.filter(emPeriodo))));
+            document.getElementById('totalParcelas').textContent=ativosFinanceiros('despesas',dados.despesas.filter(x=>x.parcelas>1 && emPeriodo(x))).length;
             renderEvolution();
             renderVisao();
         }
@@ -1142,13 +1428,13 @@
         function graficoDaVisao(type) {
             if(type==='contas') return graficoBarras('Saldos atuais por conta',dados.contas.map(c=>[c.nome,c.saldo]));
             if(type==='cartoes') return graficoFaturasCartoes();
-            if(type==='parcelamentos') return graficoBarras('Parcelas no período por cartão',agrupar(dados.despesas.filter(x=>x.parcelas>1&&emPeriodo(x)),'origem'));
-            if(type==='despesas') return graficoBarras('Despesas por categoria no período',agrupar(dados.despesas.filter(emPeriodo),'categoria'));
-            if(type==='recebimentos') return graficoBarras('Recebimentos por destino no período',agrupar(dados.recebimentos.filter(emPeriodo),'conta'));
-            if(type==='planejamento') return graficoBarras('Metas por situação no período',agrupar(dados.planejamentos.filter(emPeriodo),'status'));
+            if(type==='parcelamentos') return graficoBarras('Parcelas no período por cartão',agrupar(ativosFinanceiros('despesas',dados.despesas.filter(x=>x.parcelas>1&&emPeriodo(x))),'origem'));
+            if(type==='despesas') return graficoBarras('Despesas por categoria no período',agrupar(ativosFinanceiros('despesas',dados.despesas.filter(emPeriodo)),'categoria'));
+            if(type==='recebimentos') return graficoBarras('Recebimentos por destino no período',agrupar(recebimentosRealizados(dados.recebimentos.filter(emPeriodo)),'conta'));
+            if(type==='planejamento') return graficoBarras('Metas por situação no período',agrupar(ativosFinanceiros('planejamentos',dados.planejamentos.filter(emPeriodo)),'status'));
             return '';
         }
-        function faturaCartao(c) { return sum(dados.despesas.filter(x=>x.origem==='cartao_'+c.nome&&x.data.slice(0,7)===getGlobalTargetYM())); }
+        function faturaCartao(c) { return resumoFatura(c).pendente; }
         function totalFaturasMes() { return dados.cartoes.reduce((v,c)=>v+faturaCartao(c),0); }
         function corDisponibilidade(livre,limite) {
             const percentual=limite>0?livre/limite*100:0;
@@ -1161,26 +1447,26 @@
         function graficoFaturasCartoes() {
             const total=totalFaturasMes();
             return `<div class="ctx-box metric-chart"><h3>Faturas mensais por cartão</h3><p class="period-note">Clique em um cartão para conferir seus lançamentos. A cor da barra representa a disponibilidade do limite.</p>${dados.cartoes.length?dados.cartoes.map(c=>{
-                const f=faturaCartao(c),lim=Number(c.limite)||0,livre=lim-f;
-                return `<div class="card-indicator-line" role="button" tabindex="0" onclick="${chamada('detalhe_cartao',c.nome)}" onkeydown="if(event.key==='Enter')this.click()"><span>${esc(c.nome)}<small>${pctCartao(f,total)} do total das faturas</small></span><div><div class="card-limit-bar"><span style="width:${Math.max(0,Math.min(100,lim>0?livre/lim*100:0))}%;background:${corDisponibilidade(livre,lim)}"></span></div><small>Disponível: ${pctCartao(Math.max(0,livre),lim)} do limite</small></div><strong>${money(f)}</strong></div>`;
+                const f=faturaCartao(c),lim=Number(c.limite)||0,livre=lim-f, venc=indicadorVencimentoCartao(c);
+                return `<div class="card-indicator-line" role="button" tabindex="0" onclick="${chamada('detalhe_cartao',c.nome)}" onkeydown="if(event.key==='Enter')this.click()"><span class="invoice-card-label"><span class="invoice-card-name">${esc(c.nome)}</span><small>${pctCartao(f,total)} das faturas em aberto</small><small class="invoice-info">Vencimento ${formatarData(venc.data)}</small>${badgeVencimentoCartao(venc)}</span><div><div class="card-limit-bar"><span style="width:${Math.max(0,Math.min(100,lim>0?livre/lim*100:0))}%;background:${corDisponibilidade(livre,lim)}"></span></div><small>Disponível: ${pctCartao(Math.max(0,livre),lim)} do limite</small></div><strong>${money(f)}</strong></div>`;
             }).join(''):'<p class="ctx-empty">Nenhum cartão cadastrado.</p>'}${legendaLimites()}</div>`;
         }
         function cartoesKpi(titulo,valor,tipo,subtexto='',cartao=null) {
             return `<div class="ctx-kpi kpi-action" role="button" tabindex="0" onclick="selecionarVisao('detalhe_cartoes_kpi','${tipo}${cartao?':'+encodeURIComponent(cartao):''}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"><small>${titulo}</small><strong>${money(valor)}</strong>${subtexto?`<small style="margin-top:6px">${subtexto}</small>`:''}</div>`;
         }
         function renderListaCartoes() {
-            const limite=sum(dados.cartoes,'limite'),fatura=totalFaturasMes(),livre=limite-fatura,lancamentos=sum(dados.despesas.filter(x=>(x.origem||'').startsWith('cartao_')&&emPeriodo(x)));
-            const kpis=`<div class="ctx-kpis">${cartoesKpi('Limite total',limite,'limite','100% dos limites cadastrados')}${cartoesKpi('Usado / faturas do mês',fatura,'usado',pctCartao(fatura,limite)+' do limite total')}${cartoesKpi('Livre no mês (limite − fatura)',livre,'livre',pctCartao(Math.max(0,livre),limite)+' disponível')}${cartoesKpi('Lançamentos do período',lancamentos,'lancamentos',pctCartao(lancamentos,fatura)+' das faturas do mês')}</div>`;
+            const limite=sum(dados.cartoes,'limite'),fatura=totalFaturasMes(),livre=limite-fatura,lancamentos=sum(ativosFinanceiros('despesas',dados.despesas.filter(x=>(x.origem||'').startsWith('cartao_')&&emPeriodo(x))));
+            const kpis=`<div class="ctx-kpis">${cartoesKpi('Limite total',limite,'limite','100% dos limites cadastrados')}${cartoesKpi('Faturas pendentes do mês',fatura,'usado',pctCartao(fatura,limite)+' do limite total')}${cartoesKpi('Livre no mês (limite − fatura)',livre,'livre',pctCartao(Math.max(0,livre),limite)+' disponível')}${cartoesKpi('Lançamentos do período',lancamentos,'lancamentos',pctCartao(lancamentos,fatura)+' das faturas do mês')}</div>`;
             const nota='<p class="period-note">Usado e livre referem-se ao mês selecionado; no modo Dia, os detalhes filtram os lançamentos pela data. Livre é a diferença entre limite e fatura, sem considerar reservas de limite das parcelas futuras.</p>';
-            const tabela=`<div class="ctx-box"><table class="card-summary-table"><thead><tr><th>Cartão</th><th>Vencimento</th><th>Limite / participação</th><th>Usado / participação da fatura</th><th>Livre / disponibilidade</th></tr></thead><tbody>${dados.cartoes.length?dados.cartoes.map(c=>{
-                const valor=faturaCartao(c),lim=Number(c.limite)||0,liv=lim-valor,cor=corDisponibilidade(liv,lim),pLivre=lim>0?liv/lim*100:0;
-                return `<tr class="clickable-row" onclick="${chamada('detalhe_cartao',c.nome)}" title="Clique para acessar o cartão"><td><strong>${esc(c.nome)}</strong></td><td>Dia ${esc(c.vencimento)}</td><td>${money(lim)}<small>${pctCartao(lim,limite)} do limite total</small></td><td>${money(valor)}<small>${pctCartao(valor,fatura)} das faturas · ${pctCartao(valor,lim)} do próprio limite</small></td><td><strong style="color:${cor}">${money(liv)}</strong><small>${pLivre.toFixed(1)}% disponível</small><div class="card-limit-bar"><span style="background:${cor};width:${Math.max(0,Math.min(100,pLivre))}%"></span></div></td></tr>`;
+            const tabela=`<div class="ctx-box"><table class="card-summary-table"><thead><tr><th>Cartão</th><th>Vencimento</th><th>Limite / participação</th><th>Pendente / participação da fatura</th><th>Livre / disponibilidade</th></tr></thead><tbody>${dados.cartoes.length?dados.cartoes.map(c=>{
+                const valor=faturaCartao(c),lim=Number(c.limite)||0,liv=lim-valor,cor=corDisponibilidade(liv,lim),pLivre=lim>0?liv/lim*100:0,venc=indicadorVencimentoCartao(c);
+                return `<tr class="clickable-row" onclick="${chamada('detalhe_cartao',c.nome)}" title="Clique para acessar o cartão"><td><strong>${esc(c.nome)}</strong></td><td><span class="invoice-info">${formatarData(venc.data)}</span>${badgeVencimentoCartao(venc)}</td><td>${money(lim)}<small>${pctCartao(lim,limite)} do limite total</small></td><td>${money(valor)}<small>${pctCartao(valor,fatura)} das faturas · ${pctCartao(valor,lim)} do próprio limite</small></td><td><strong style="color:${cor}">${money(liv)}</strong><small>${pLivre.toFixed(1)}% disponível</small><div class="card-limit-bar"><span style="background:${cor};width:${Math.max(0,Math.min(100,pLivre))}%"></span></div></td></tr>`;
             }).join(''):'<tr><td colspan="5" class="ctx-empty">Nenhum cartão cadastrado.</td></tr>'}</tbody></table>${legendaLimites()}</div>`;
             return kpis+nota+tabela;
         }
         function renderDetalheIndicadorCartoes(tipo) {
             const [indicador,codCartao]=String(tipo).split(':');const nomeCartao=codCartao?decodeURIComponent(codCartao):null;tipo=indicador;
-            const labels={limite:'Limite total dos cartões',usado:'Faturas do mês',livre:'Limites disponíveis',lancamentos:'Lançamentos do período'};
+            const labels={limite:'Limite total dos cartões',usado:'Faturas pendentes do mês',livre:'Limites disponíveis',lancamentos:'Lançamentos do período'};
             if(!labels[tipo])return navegarVoltar();
             header('💳 '+labels[tipo]+(nomeCartao?' — '+nomeCartao:''),null,'COMPOSIÇÃO DOS CARTÕES');
             const limite=sum(dados.cartoes,'limite'),fatura=totalFaturasMes();
@@ -1196,7 +1482,7 @@
         }
 
                 function renderListaContas() {
-            return `<div class="ctx-kpis">${kpi('Dinheiro atual',money(dados.dinheiroFisico))}${kpi('Saldo atual em contas',money(sum(dados.contas,'saldo')))}${kpi('Entradas do período',money(sum(dados.recebimentos.filter(emPeriodo))))}${kpi('Saídas em contas no período',money(sum(dados.despesas.filter(x=>x.origem.startsWith('conta_')&&emPeriodo(x)))))}</div><p class="period-note">Os saldos cadastrados são atuais; o período filtra os lançamentos, sem reconstruir saldos históricos.</p><div class="ctx-box"><table><thead><tr><th>Conta</th><th>Tipo</th><th>Saldo atual</th></tr></thead><tbody>${[{nome:'Dinheiro',tipo:'Espécie',saldo:dados.dinheiroFisico},...dados.contas].map(c=>`<tr class="clickable-row" onclick="${chamada('detalhe_conta',c.nome)}" title="Clique para acessar a conta"><td><strong>${esc(c.nome)}</strong></td><td>${esc(c.tipo)}</td><td>${money(c.saldo)}</td></tr>`).join('')}</tbody></table></div>`;
+            return `<div class="ctx-kpis">${kpi('Dinheiro atual',money(dados.dinheiroFisico))}${kpi('Saldo atual em contas',money(sum(dados.contas,'saldo')))}${kpi('Entradas do período',money(sum(recebimentosRealizados(dados.recebimentos.filter(emPeriodo)))))}${kpi('Saídas em contas no período',money(sum(ativosFinanceiros('despesas',dados.despesas.filter(x=>x.origem.startsWith('conta_')&&emPeriodo(x))))))}</div><p class="period-note">Os saldos cadastrados são atuais; o período filtra os lançamentos, sem reconstruir saldos históricos.</p><div class="ctx-box"><table><thead><tr><th>Conta</th><th>Tipo</th><th>Saldo atual</th></tr></thead><tbody>${[{nome:'Dinheiro',tipo:'Espécie',saldo:dados.dinheiroFisico},...dados.contas].map(c=>`<tr class="clickable-row" onclick="${chamada('detalhe_conta',c.nome)}" title="Clique para acessar a conta"><td><strong>${esc(c.nome)}</strong></td><td>${esc(c.tipo)}</td><td>${money(c.saldo)}</td></tr>`).join('')}</tbody></table></div>`;
         }
 
                 function tabelaLancamentos(saidas,entradas=[],edicaoDireta=false) {
@@ -1206,7 +1492,7 @@
 
                 function renderDetalheConta(nome) {
             let c=dados.contas.find(x=>x.nome===nome); if(!c&&nome!=='Dinheiro') return navegarVoltar();
-            let d=dados.despesas.filter(x=>x.origem===(nome==='Dinheiro'?'dinheiro':'conta_'+nome)&&emPeriodo(x)),r=dados.recebimentos.filter(x=>x.conta===nome&&emPeriodo(x));
+            let d=ativosFinanceiros('despesas',dados.despesas.filter(x=>x.origem===(nome==='Dinheiro'?'dinheiro':'conta_'+nome)&&emPeriodo(x))),r=recebimentosRealizados(dados.recebimentos.filter(x=>x.conta===nome&&emPeriodo(x)));
             header('🏦 '+nome,{text:'+ Transferir',fn:()=>abrirTransferencia()},'LANÇAMENTOS DA CONTA');
             document.getElementById('contextContent').innerHTML=`<div class="ctx-kpis">${kpi('Saldo atual cadastrado',money(c?c.saldo:dados.dinheiroFisico))}${kpi('Entradas no período',money(sum(r)))}${kpi('Saídas no período',money(sum(d)))}</div>`+graficoBarras('Movimentação no período',[['Entradas',sum(r)],['Saídas',sum(d)]])+tabelaLancamentos(d,r)+tabelaTransferenciasConta(nome);
         }
@@ -1214,7 +1500,7 @@
             let c=dados.cartoes.find(x=>x.nome===nome); if(!c) return navegarVoltar();
             let d=dados.despesas.filter(x=>x.origem==='cartao_'+nome&&emPeriodo(x)),f=faturaCartao(c);
             header('💳 '+nome,null,'LANÇAMENTOS DO CARTÃO');
-            document.getElementById('contextContent').innerHTML=`<div class="ctx-kpis">${cartoesKpi('Limite total',c.limite,'limite',pctCartao(c.limite,sum(dados.cartoes,'limite'))+' do total',c.nome)}${cartoesKpi('Usado / fatura mensal',f,'usado',pctCartao(f,c.limite)+' do limite',c.nome)}${cartoesKpi('Livre no mês',c.limite-f,'livre',pctCartao(Math.max(0,c.limite-f),c.limite)+' disponível',c.nome)}${kpi('Vencimento','Dia '+c.vencimento)}</div>`+graficoBarras('Gastos do período por categoria',agrupar(d,'categoria'))+tabelaLancamentos(d);
+            document.getElementById('contextContent').innerHTML=`<div class="ctx-kpis">${cartoesKpi('Limite total',c.limite,'limite',pctCartao(c.limite,sum(dados.cartoes,'limite'))+' do total',c.nome)}${cartoesKpi('Fatura pendente no mês',f,'usado',pctCartao(f,c.limite)+' do limite',c.nome)}${cartoesKpi('Livre no mês',c.limite-f,'livre',pctCartao(Math.max(0,c.limite-f),c.limite)+' disponível',c.nome)}${kpiVencimentoCartao(c)}</div>`+graficoBarras('Gastos do período por categoria',agrupar(d,'categoria'))+`<div class="inv-toolbar"><button class="btn btn-primary" onclick="selecionarVisao('detalhe_fatura', '${encodeURIComponent(nome)}|${getGlobalTargetYM()}')">💳 Ver fatura agrupada no calendário</button></div>`+tabelaLancamentos(d);
         }
         function gruposParcelas() {
             let grupos=new Map(); dados.despesas.filter(x=>x.parcelas>1).forEach(x=>{let key=x.parcelamentoId||x.origem+'|'+x.titulo.replace(/\s*\(\d+\/\d+\)$/,''); if(!grupos.has(key)) grupos.set(key,[]); grupos.get(key).push(x);}); return grupos;
