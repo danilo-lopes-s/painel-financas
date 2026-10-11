@@ -220,6 +220,52 @@
         .inv-projections strong{font-size:1.05rem;}
         .section-heading{margin:20px 0 9px;}
         .inv-actions{white-space:nowrap;}
+        /* v18: investimentos agrupados por tipo, em blocos expansíveis */
+        details.inv-group,details.inv-explica{padding:0;overflow:hidden}
+        details.inv-group{margin:0 0 10px}
+        details.inv-explica{margin:0}
+        .inv-catalog{grid-template-columns:1fr;gap:8px}
+        details.inv-group>summary,details.inv-explica>summary{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:12px 14px;cursor:pointer;list-style:none;user-select:none}
+        details.inv-group>summary::-webkit-details-marker,details.inv-explica>summary::-webkit-details-marker{display:none}
+        details.inv-group>summary::before,details.inv-explica>summary::before{content:'▸';color:var(--pri);display:inline-block;width:1em;transition:transform .15s}
+        details.inv-group[open]>summary::before,details.inv-explica[open]>summary::before{transform:rotate(90deg)}
+        details.inv-group>summary:hover,details.inv-explica>summary:hover{background:rgba(102,126,234,.08)}
+        details.inv-group>summary:focus-visible,details.inv-explica>summary:focus-visible{outline:2px solid var(--pri);outline-offset:-2px}
+        .inv-group-meta{margin-left:auto;font-size:.82rem;color:var(--muted)}
+        .inv-group-body{padding:0 14px 14px;overflow-x:auto}
+        .inv-explica-body{padding:0 14px 14px}
+        .inv-explica-body .inv-description{margin-top:0}
+        /* V18: menus, gráficos clicáveis, cards de contas */
+        .evolution-panel{min-width:0;overflow:hidden}
+        .evolution-head>div:first-child{min-width:0;flex:1 1 250px}
+        #metricButtons{flex-wrap:wrap;align-items:center;justify-content:flex-end;gap:6px;max-width:100%;margin-left:auto}
+        #metricButtons button,#metricButtons select{white-space:nowrap}
+        #metricButtons select{width:auto;flex:0 0 auto;max-width:100%}
+        .menu-linha{display:flex;align-items:center;gap:16px;padding:18px 20px;border:1px solid var(--line);border-radius:12px;margin-bottom:10px;cursor:pointer;background:var(--surface);transition:border-color .15s,background .15s}
+        .menu-linha:hover{border-color:var(--pri);background:rgba(102,126,234,.08)}
+        .menu-linha:focus-visible{outline:2px solid var(--pri);outline-offset:2px}
+        .menu-linha .ml-ico{font-size:2rem}
+        .menu-linha .ml-txt{flex:1;min-width:0}
+        .menu-linha .ml-txt strong{display:block;font-size:1.1rem}
+        .menu-linha .ml-txt small{color:var(--muted);font-size:.82rem}
+        .menu-linha .ml-seta{color:var(--pri);font-size:1.8rem;line-height:1}
+        .kpis-auto{grid-template-columns:repeat(auto-fit,minmax(190px,1fr))}
+        .clickable-bar{cursor:pointer;border-radius:8px;padding-left:6px;padding-right:6px;transition:background .15s}
+        .clickable-bar:hover{background:rgba(102,126,234,.1)}
+        .clickable-bar:focus-visible{outline:2px solid var(--pri)}
+        .chart-box{margin-bottom:14px}
+        .svg-grafico{width:100%;height:auto;display:block}
+        .pt-grafico{cursor:pointer}
+        .pt-grafico:hover circle:last-child{r:6.5}
+        .rosca-wrap{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+        .svg-rosca{width:200px;height:200px;flex:0 0 auto}
+        .rosca-leg{flex:1;min-width:180px;display:grid;gap:3px;font-size:.82rem}
+        .card-limit-values{display:flex;justify-content:space-between;gap:8px;font-size:.78rem;color:var(--muted);margin-bottom:2px}
+        table.inv-fixed{table-layout:fixed;min-width:780px}
+        .ctx-box.inv-dist{display:flex;flex-direction:column}
+        .ctx-box.inv-dist h3{margin-bottom:20px}
+        .ctx-box.inv-dist .category-breakdown{flex:1;padding:16px 2px}
+        .ctx-box.inv-dist .progress-bar{height:14px}
         .inv-actions button+button{margin-left:5px;}
         .inv-form-section{border:1px solid var(--line);border-radius:10px;padding:12px;margin:10px 0;}
         .inv-form-section legend{font-weight:bold;padding:0 8px;}
@@ -241,11 +287,9 @@
                     💾 Salvar Arquivo
                 </button>
                 <span id="unsavedIndicator" class="change-indicator" role="status" aria-live="polite" hidden title="Existem alterações ainda não salvas no arquivo">● Alterações não salvas</span>
-                <button class="btn btn-import" onclick="document.getElementById('importFileInput').click()">📥 Importar JSON</button>
                 <button class="btn btn-danger" onclick="zerarPainel()" title="Apagar os dados do painel somente após confirmação">🗑️ Zerar painel</button>
             </div>
         </div>
-        <input type="file" id="importFileInput" accept=".json" onchange="importarDados(event)" style="display:none">
 
         <!-- DASHBOARD LAYOUT -->
         <div id="mainDashboard">
@@ -254,15 +298,13 @@
                 <div class="cards-grid" id="navCards">
                     <div class="card nav-card" draggable="true" data-view="principal" onclick="selecionarVisao('principal')"><div class="card-icon">🏠</div><div class="card-title">Visão Geral</div><div class="card-value" id="navGeral">-</div><span class="nav-arrow">☰</span></div>
                     <div class="card nav-card" draggable="true" data-view="calendario" onclick="selecionarVisao('calendario')"><div class="card-icon">📅</div><div class="card-title">Calendário</div><div class="card-value" style="font-size:0.8em">📅</div><span class="nav-arrow">☰</span></div>
-                    <div class="card nav-card" draggable="true" data-view="contas" onclick="selecionarVisao('contas')"><div class="card-icon">🏦</div><div class="card-title">Contas</div><div class="card-value" id="totalContas">0</div><span class="nav-arrow">☰</span></div>
-                    <div class="card nav-card" draggable="true" data-view="cartoes" onclick="selecionarVisao('cartoes')"><div class="card-icon">💳</div><div class="card-title">Cartões</div><div class="card-value" id="totalCartoes">0</div><span class="nav-arrow">☰</span></div>
+                    <div class="card nav-card" draggable="true" data-view="contas" onclick="selecionarVisao('contas')"><div class="card-icon">🏦</div><div class="card-title">Contas e Transferências</div><div class="card-value" id="totalContas">0</div><span class="nav-arrow">☰</span></div>
+                    <div class="card nav-card" draggable="true" data-view="cartoes" onclick="selecionarVisao('cartoes')"><div class="card-icon">💳</div><div class="card-title">Cartões e Parcelamentos</div><div class="card-value" id="totalCartoes">0</div><span class="nav-arrow">☰</span></div>
                     <div class="card nav-card" draggable="true" data-view="despesas" onclick="selecionarVisao('despesas')"><div class="card-icon">📤</div><div class="card-title">Despesas</div><div class="card-value" id="totalDespesas">R$ 0,00</div><span class="nav-arrow">☰</span></div>
                     <div class="card nav-card" draggable="true" data-view="planejamento" onclick="selecionarVisao('planejamento')"><div class="card-icon">🎯</div><div class="card-title">Metas a Receber</div><div class="card-value" id="totalPlanejado">R$ 0,00</div><span class="nav-arrow">☰</span></div>
                     <div class="card nav-card" draggable="true" data-view="recebimentos" onclick="selecionarVisao('recebimentos')"><div class="card-icon">💰</div><div class="card-title">Recebimentos</div><div class="card-value" id="totalRecebimentos">R$ 0,00</div><span class="nav-arrow">☰</span></div>
-                    <div class="card nav-card" draggable="true" data-view="parcelamentos" onclick="selecionarVisao('parcelamentos')"><div class="card-icon">⏳</div><div class="card-title">Parcelamentos</div><div class="card-value" id="totalParcelas">0</div><span class="nav-arrow">☰</span></div>
                     <div class="card nav-card" draggable="true" data-view="categorias" onclick="selecionarVisao('categorias')"><div class="card-icon">🏷️</div><div class="card-title">Categorias</div><div class="card-value" id="totalCategorias">0</div><span class="nav-arrow">☰</span></div>
                     <div class="card nav-card" draggable="true" data-view="investimentos" onclick="selecionarVisao('investimentos')"><div class="card-icon">📈</div><div class="card-title">Investimentos</div><div class="card-value" id="totalInvestimentos">R$ 0,00</div><span class="nav-arrow">☰</span></div>
-                    <div class="card nav-card" draggable="true" data-view="transferencias" onclick="selecionarVisao('transferencias')"><div class="card-icon">🔄</div><div class="card-title">Transferências</div><div class="card-value" id="totalTransferencias">0</div><span class="nav-arrow">☰</span></div>
                 </div>
                 
                 <div class="charts-container context-panel" id="contextPanel">
@@ -319,9 +361,9 @@
                                 <option value="12">Últimos 12 Meses</option>
                                 <option value="personalizado">Personalizado</option>
                             </select>
-                             <div id="evoCustomDates" class="evo-custom-dates" hidden><label>Data inicial <input type="date" id="evoStart" onchange="renderEvolution()"></label><label>Data final <input type="date" id="evoEnd" onchange="renderEvolution()"></label></div>
                         </div>
                     </div>
+                    <div id="evoCustomDates" class="evo-custom-dates" hidden><label>Data inicial <input type="date" id="evoStart" onchange="renderEvolution()"></label><label>Data final <input type="date" id="evoEnd" onchange="renderEvolution()"></label></div>
                     <svg id="evolutionSvg" viewBox="0 0 900 230" preserveAspectRatio="none"></svg>
                 </div>
             </div>
@@ -338,10 +380,12 @@
 
     <!-- NOVOS MODAIS: conta, cartão, parcelamento e confirmação de meta -->
     <div id="contaModal" class="modal" onclick="if(event.target===this)closeModal('contaModal')"><div class="modal-content"><div class="modal-header"><h2>🏦 Nova Conta</h2><button class="modal-close" onclick="closeModal('contaModal')">✕</button></div>
-        <div class="form-row"><div class="form-group"><label>Nome da conta *</label><input type="text" id="contaNome" placeholder="Ex.: Bradesco, Inter, Caixa"></div><div class="form-group"><label>Tipo *</label><select id="contaTipo"><option value="corrente">Conta corrente</option><option value="poupança">Poupança</option><option value="salário">Conta salário</option><option value="digital">Conta digital / pagamento</option><option value="investimento">Conta investimento</option><option value="outro">Outra</option></select></div></div>
+        <div class="form-row"><div class="form-group"><label>Nome da conta *</label><input type="text" id="contaNome" placeholder="Ex.: Bradesco, Inter, Caixa"></div><div class="form-group"><label>Tipo *</label><select id="contaTipo"><option value="corrente">Conta Corrente</option><option value="poupança">Conta Poupança</option><option value="investimento">Conta Investimento</option><option value="previdência">Conta Previdência</option></select></div></div>
         <div class="form-row"><div class="form-group"><label>Banco / instituição</label><input type="text" id="contaBanco" placeholder="Ex.: Banco Bradesco S.A."></div><div class="form-group"><label>Saldo inicial (R$) *</label><input type="number" id="contaSaldo" step="0.01" value="0"></div></div>
         <div class="form-row"><div class="form-group"><label>Agência</label><input type="text" id="contaAgencia" placeholder="Ex.: 0001"></div><div class="form-group"><label>Número da conta</label><input type="text" id="contaNumero" placeholder="Ex.: 12345-6"></div></div>
+        <div class="form-group"><label>Data do saldo inicial (usada no histórico de poupança e previdência)</label><input type="date" id="contaDataSaldo"></div>
         <div class="form-group"><label>Observações</label><textarea id="contaNotas" rows="2"></textarea></div>
+        <p class="period-note">Poupança e Corrente compõem o saldo atual em contas. Investimento e Previdência ficam fora do saldo líquido; em Investimento o saldo informado é o caixa da conta e o patrimônio vem das aplicações vinculadas.</p>
         <button class="btn btn-primary" onclick="salvarConta()">Salvar conta</button></div></div>
 
     <div id="cartaoModal" class="modal" onclick="if(event.target===this)closeModal('cartaoModal')"><div class="modal-content"><div class="modal-header"><h2>💳 Novo Cartão</h2><button class="modal-close" onclick="closeModal('cartaoModal')">✕</button></div>
@@ -367,12 +411,20 @@
         <p class="period-note">Ao confirmar, a meta passa a compor a aba Recebimentos com este destino.</p>
         <button class="btn btn-primary" onclick="confirmarMeta()">Confirmar meta</button></div></div>
 
+    <!-- V18: quadro de detalhes dos gráficos e lançamentos de poupança / previdência -->
+    <div id="quadroModal" class="modal" onclick="if(event.target===this)fecharQuadro()"><div class="modal-content" style="max-width:760px"><div class="modal-header"><h2 id="quadroTitulo">Detalhes</h2><button class="modal-close" onclick="fecharQuadro()">✕</button></div><div id="quadroCorpo"></div></div></div>
+    <div id="movContaModal" class="modal" onclick="if(event.target===this)closeModal('movContaModal')"><div class="modal-content"><div class="modal-header"><h2 id="movContaTitulo">Novo lançamento</h2><button class="modal-close" onclick="closeModal('movContaModal')">✕</button></div>
+        <input type="hidden" id="movContaNome"><div class="form-row"><div class="form-group"><label>Tipo *</label><select id="movContaTipo"></select></div><div class="form-group"><label>Data *</label><input type="date" id="movContaData"></div></div>
+        <div class="form-row"><div class="form-group"><label>Valor (R$) *</label><input type="number" step="0.01" id="movContaValor"></div><div class="form-group"><label>Observação</label><input type="text" id="movContaNota"></div></div>
+        <p class="period-note">O lançamento atualiza o saldo atual da conta. Depósitos/aportes e rendimentos somam; saques/resgates subtraem.</p><button class="btn btn-primary" onclick="salvarMovConta()">Salvar lançamento</button></div></div>
+
     <!-- Cadastro de ativos (dados independentes de saldos e transações de contas) -->
     <div id="investimentoModal" class="modal" onclick="if(event.target===this)closeModal('investimentoModal')"><div class="modal-content" style="max-width:790px"><div class="modal-header"><h2 id="invFormTitle">Novo investimento</h2><button class="modal-close" onclick="closeModal('investimentoModal')">✕</button></div>
         <input type="hidden" id="invId"><div class="form-row"><div class="form-group"><label>Classe</label><select id="invClasse" onchange="popularTiposInv()"><option value="fixa">Renda Fixa</option><option value="variavel">Renda Variável</option></select></div><div class="form-group"><label>Tipo de investimento</label><select id="invTipo" onchange="renderInvExtras()"></select></div></div>
         <p class="period-note" id="invTipoDescricao"></p>
         <div class="form-row"><div class="form-group"><label>Nome da aplicação *</label><input id="invNome" placeholder="Ex.: CDB Banco X 2028, PETR4, BTC"></div><div class="form-group"><label>Ticker / identificação</label><input id="invCodigo" placeholder="Ex.: PETR4, HGLG11, BTC"></div></div>
         <div class="form-row"><div class="form-group"><label>Banco / emissor / corretora</label><input id="invInstituicao"></div><div class="form-group"><label>Data inicial</label><input id="invDataInicio" type="date"></div></div>
+        <div class="form-row"><div class="form-group"><label>Conta de investimento (origem dos aportes)</label><select id="invConta"></select></div></div>
         <fieldset class="inv-form-section" id="invFixo"><legend>Condições da renda fixa</legend><div class="form-row"><div class="form-group"><label>Indexador</label><select id="invIndexador"><option>Prefixado</option><option>CDI</option><option>Selic</option><option>IPCA+</option><option>TR+</option><option>Outro</option></select></div><div class="form-group"><label>Vencimento</label><input id="invVencimento" type="date"></div></div>
         <div class="form-row"><div class="form-group"><label>Taxa anual contratada (% a.a.; prefixados)</label><input id="invTaxaAnual" type="number" step="any" placeholder="Ex.: 12"></div><div class="form-group"><label>Percentual do indexador (%; ex.: 110% CDI)</label><input id="invPercentualIndexador" type="number" step="any" placeholder="Ex.: 110"></div></div>
         <div class="form-row"><div class="form-group"><label>Taxa base anual hipotética (% CDI, Selic, IPCA ou TR)</label><input id="invTaxaBase" type="number" step="any" placeholder="Ex.: 10,5"></div><div class="form-group"><label>Spread anual (% adicional)</label><input id="invSpread" type="number" step="any" placeholder="Ex.: 6"></div></div>
@@ -433,6 +485,7 @@
             
             garantirModulos();
             adicionarDemonstracaoInvestV17();
+            adicionarDemonstracaoContasV18();
             // Garantir Categorias pedidas (se vier vazio ou v9 limpar)
             if(!dados.zerado && (!dados.categorias || dados.categorias.length === 0)) {
                 dados.categorias = [
@@ -703,13 +756,29 @@
         // ==========================================
         // 2. RENDERIZAÇÃO DE TELAS
         // ==========================================
+        // Ao navegar (drill down ou voltar), se o título do painel não estiver visível, volta ao começo da página.
+        function garantirTopoVisivel() {
+            const cab=document.querySelector('#contextPanel .context-head'); if(!cab) return;
+            const r=cab.getBoundingClientRect(), visivel=r.top>=0&&r.top<window.innerHeight-40;
+            if(visivel) return;
+            const duasColunas=window.matchMedia('(min-width:851px)').matches;
+            if(duasColunas) window.scrollTo({top:0,behavior:'smooth'});
+            else document.getElementById('contextPanel').scrollIntoView({behavior:'smooth',block:'start'});
+        }
         window.selecionarVisao = (v, param = null) => {
-            if((v.startsWith('detalhe_')||v.startsWith('investimentos_')) && (v!==visao || param!==itemAtual)) historicoVisoes.push({visao,itemAtual});
-            else if(!v.startsWith('detalhe_')&&!v.startsWith('investimentos_')) historicoVisoes=[];
-            visao=v; itemAtual=param; renderVisao();
+            const secundaria=/^(detalhe_|investimentos_|contas_|cartoes_)/.test(v)||v==='transferencias'||v==='parcelamentos';
+            if(secundaria && (v!==visao || param!==itemAtual)) historicoVisoes.push({visao,itemAtual});
+            else if(!secundaria) historicoVisoes=[];
+            visao=v; itemAtual=param; renderVisao(); garantirTopoVisivel();
         };
         function renderVisao() {
+            resetRegistros();
             if(visao === 'principal') renderPrincipal();
+            else if(visao === 'contas') renderContasMenu();
+            else if(visao === 'contas_lista') renderContasLista();
+            else if(visao === 'contas_tipo') renderContasTipo(itemAtual);
+            else if(visao === 'cartoes') renderCartoesMenu();
+            else if(visao === 'cartoes_lista') renderSimple('cartoes');
             else if(visao === 'calendario') renderCalendario();
             else if(visao === 'categorias') renderCategorias();
             else if(visao === 'investimentos') renderInvestimentos();
@@ -730,10 +799,10 @@
             else if(visao === 'detalhe_parcelamento') renderDetalheParcelamento(itemAtual);
              else if(visao === 'detalhe_resumo') renderCorrespondencias(itemAtual);
              else if(visao === 'detalhe_categoria') renderCorrespondencias(itemAtual);
-            else if(visao === 'saldo') { header('📊 Composição do Saldo Líquido'); document.getElementById('contextContent').innerHTML=graficoBarras('Composição atual', [['Dinheiro',dados.dinheiroFisico],['Contas',sum(dados.contas,'saldo')],['Faturas pendentes',totalFaturasPendentesMes()],['Parcelas pendentes',totalParcelasPendentesMes()]]); }
+            else if(visao === 'saldo') { header('📊 Composição do Saldo Líquido'); document.getElementById('contextContent').innerHTML=graficoBarras('Composição atual', [['Dinheiro',dados.dinheiroFisico],['Contas',saldoContasDisponiveis()],['Faturas pendentes',totalFaturasPendentesMes()],['Parcelas pendentes',totalParcelasPendentesMes()]],n=>n==='Dinheiro'?`selecionarVisao('contas_tipo','dinheiro')`:n==='Contas'?`selecionarVisao('contas_lista')`:regQuadro(()=>({titulo:n+' (mês selecionado)',html:quadroTabela(despesasCartaoPendentesMes(n==='Parcelas pendentes').map(itDesp))}))); }
             else renderSimple(visao);
         }
-        window.navegarVoltar = () => { let anterior=historicoVisoes.pop(); visao=anterior?anterior.visao:'principal'; itemAtual=anterior?anterior.itemAtual:null; renderVisao(); };
+        window.navegarVoltar = () => { let anterior=historicoVisoes.pop(); visao=anterior?anterior.visao:'principal'; itemAtual=anterior?anterior.itemAtual:null; renderVisao(); garantirTopoVisivel(); };
 
         function header(t, action, sub = 'PAINEL DE DADOS', action2 = null) {
             document.getElementById('contextSubtitle').textContent = sub; document.getElementById('contextTitle').textContent = t;
@@ -744,7 +813,7 @@
             if(action) { a.style.display = 'inline-flex'; a.innerHTML = action.text; a.onclick = action.fn; } else a.style.display = 'none';
             let a2 = document.getElementById('contextSecondary');
             if(action2) { a2.style.display = 'inline-flex'; a2.innerHTML = action2.text; a2.onclick = action2.fn; } else { a2.style.display = 'none'; a2.onclick = null; }
-            document.querySelectorAll('.nav-card').forEach(c => c.classList.toggle('active-card', (c.dataset.view === visao || (c.dataset.view==='investimentos'&&(visao.startsWith('investimentos_')||visao==='detalhe_investimento')))));
+            document.querySelectorAll('.nav-card').forEach(c => c.classList.toggle('active-card', navAtivo(c.dataset.view)));
         }
 
         function renderPrincipal() {
@@ -824,7 +893,7 @@
                 gridHtml+=`<div onclick="alterarModo('dia'); selecionarPeriodo('${ym}-${String(d).padStart(2,'0')}')" class="cal-day ${modoPeriodo==='dia'&&d===globalDia?'selected-day':isToday?'s-hoje':''}"><span class="cal-date">${d}</span><div style="display:flex;flex-direction:column;gap:2px">${badges}</div></div>`;
             }
             const filtro=`<div class="table-toolbar" style="margin-bottom:15px"><label style="margin:0">Mostrar nos lançamentos</label><div class="segmented" id="calDisplayMode" role="group" aria-label="Exibição dos lançamentos no calendário"><button type="button" class="${calendarioExibicao==='valor'?'active':''}" aria-pressed="${calendarioExibicao==='valor'}" onclick="alterarExibicaoCalendario('valor')">💲 Valores</button><button type="button" class="${calendarioExibicao==='titulo'?'active':''}" aria-pressed="${calendarioExibicao==='titulo'}" onclick="alterarExibicaoCalendario('titulo')">🏷️ Títulos</button></div></div>`;
-            document.getElementById('contextContent').innerHTML=graficoBarras('Movimentação no período',[['Recebimentos',sum(dados.recebimentos.filter(emPeriodo))],['Despesas',sum(dados.despesas.filter(emPeriodo))],['Metas',sum(dados.planejamentos.filter(emPeriodo))]])+filtro+`<div class="calendar-wrapper"><div class="calendar-header"><div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div></div><div class="calendar-grid">${gridHtml}</div></div>`;
+            document.getElementById('contextContent').innerHTML=graficoBarras('Movimentação no período',[['Recebimentos',sum(dados.recebimentos.filter(emPeriodo))],['Despesas',sum(dados.despesas.filter(emPeriodo))],['Metas',sum(dados.planejamentos.filter(emPeriodo))]],n=>`selecionarVisao('detalhe_resumo','${n==='Recebimentos'?'receitas':n==='Despesas'?'despesas':'metas'}')`)+filtro+`<div class="calendar-wrapper"><div class="calendar-header"><div>DOM</div><div>SEG</div><div>TER</div><div>QUA</div><div>QUI</div><div>SEX</div><div>SÁB</div></div><div class="calendar-grid">${gridHtml}</div></div>`;
         }
         window.alterarExibicaoCalendario = modo => { if(['valor','titulo'].includes(modo)){calendarioExibicao=modo;renderCalendario();} };
 
@@ -834,7 +903,7 @@
                 despesas:{title:'📤 Despesas',action:{text:'+ Nova Despesa',fn:()=>abrirModalDespesa()}},
                 recebimentos:{title:'💰 Entradas',action:{text:'+ Nova Entrada',fn:()=>abrirModalRecebimento()}},
                 planejamento:{title:'🎯 Metas',action:{text:'+ Nova Meta',fn:()=>abrirModalPlan()}},
-                parcelamentos:{title:'⏳ Parcelamentos',action:null}
+                parcelamentos:{title:'⏳ Parcelamentos',action:{text:'+ Criar Parcelamento',fn:()=>abrirModalParcelamento()}}
             }[type];
             header(conf.title,conf.action,undefined,conf.action2);
             let html='';
@@ -903,9 +972,10 @@
             const minX=60,maxX=870,x=i=>meses.length===1?(minX+maxX)/2:minX+i*(maxX-minX)/(meses.length-1);
             const y=v=>20+(ymax-v)/amplitude*160;
             let grid='';for(let i=0;i<=4;i++){let v=ymax-i*amplitude/4,yy=20+i*40;grid+=`<line x1="${minX}" y1="${yy}" x2="${maxX}" y2="${yy}" stroke="var(--line)"/><text x="0" y="${yy+3}" font-size="10" fill="var(--muted)">${money(v).replace('R$ ','').replace('R$ ','')}</text>`}
-            const linhas=series.map(s=>`<polyline points="${s.v.map((v,i)=>`${x(i)},${y(v)}`).join(' ')}" fill="none" stroke="${s.c}" stroke-width="3" stroke-linejoin="round"/>${s.v.map((v,i)=>`<circle cx="${x(i)}" cy="${y(v)}" r="3" fill="${s.c}"><title>${s.n}: ${money(v)} — ${meses[i].label}</title></circle>`).join('')}`).join('');
+            const linhas=series.map((s,si)=>`<polyline points="${s.v.map((v,i)=>`${x(i)},${y(v)}`).join(' ')}" fill="none" stroke="${s.c}" stroke-width="3" stroke-linejoin="round"/>${s.v.map((v,i)=>`<g style="cursor:pointer" role="button" tabindex="0" onclick="cliqueEvolucao(${si},${i})"><circle cx="${x(i)}" cy="${y(v)}" r="12" fill="transparent"/><circle cx="${x(i)}" cy="${y(v)}" r="4.5" fill="${s.c}"><title>${s.n}: ${money(v)} — ${meses[i].label}. Clique para ver os lançamentos</title></circle></g>`).join('')}`).join('');
             const step=Math.max(1,Math.ceil(meses.length/12));
             const labels=meses.map((m,i)=>i%step===0||i===meses.length-1?`<text x="${x(i)}" y="215" text-anchor="middle" font-size="11" fill="var(--muted)">${m.label.toUpperCase()}</text>`:'').join('');
+            window.__evo={meses,series};
             svg.innerHTML=grid+linhas+labels;
             document.getElementById('evolutionLegend').innerHTML=series.map(s=>`<span><i class="legend-dot" style="background:${s.c}"></i> ${s.n}</span>`).join('');
         };
@@ -1127,7 +1197,6 @@
         function refresh() {
             garantirModulos();
             document.getElementById('totalInvestimentos').textContent=money(resumoCarteira().valor);
-            document.getElementById('totalTransferencias').textContent=dados.transferencias.length;
             let ym = getGlobalTargetYM();
             document.getElementById('totalContas').textContent = dados.contas.length; 
             document.getElementById('totalCartoes').textContent = dados.cartoes.length;
@@ -1136,15 +1205,14 @@
             document.getElementById('totalRecebimentos').textContent = money(sum(dados.recebimentos.filter(emPeriodo)));
             document.getElementById('totalPlanejado').textContent = money(sum(dados.planejamentos.filter(emPeriodo)));
             
-            let real = Number(dados.dinheiroFisico) + sum(dados.contas, 'saldo'); let f = totalFaturasPendentesMes(), pp = totalParcelasPendentesMes();
+            let real = Number(dados.dinheiroFisico) + saldoContasDisponiveis(); let f = totalFaturasPendentesMes(), pp = totalParcelasPendentesMes();
             document.getElementById('saldoFisico').textContent = money(dados.dinheiroFisico);
-            document.getElementById('saldoDigital').textContent = money(sum(dados.contas, 'saldo'));
+            document.getElementById('saldoDigital').textContent = money(saldoContasDisponiveis());
             document.getElementById('saldoFaturas').textContent = "- " + money(f);
             document.getElementById('saldoParcelas').textContent = "- " + money(pp);
             document.getElementById('saldoGeral').textContent = money(real - f - pp);
 
             document.getElementById('navGeral').textContent=money(sum(dados.recebimentos.filter(emPeriodo))-sum(dados.despesas.filter(emPeriodo)));
-            document.getElementById('totalParcelas').textContent=dados.despesas.filter(x=>x.parcelas>1 && emPeriodo(x)).length;
             renderEvolution();
             renderVisao();
         }
@@ -1176,21 +1244,26 @@
 
         const esc = v => String(v ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         const chamada = (view,id) => esc(`selecionarVisao(${JSON.stringify(view)},${JSON.stringify(id)})`);
-        function graficoBarras(titulo, valores) {
+        function graficoBarras(titulo, valores, acao=null) {
             const max=Math.max(1,...valores.map(x=>Math.abs(Number(x[1])||0)));
-            return `<div class="ctx-box metric-chart"><h3>${esc(titulo)}</h3>${valores.length?valores.map(([nome,valor],i)=>`<div class="metric-bar"><span>${esc(nome)}</span><div class="progress-bar"><span style="width:${Math.abs(valor)/max*100}%;background:${['#667eea','#38b2ac','#ed8936','#9f7aea'][i%4]}"></span></div><strong>${money(valor)}</strong></div>`).join(''):'<div class="ctx-empty">Nenhum lançamento no período selecionado.</div>'}</div>`;
+            return `<div class="ctx-box metric-chart"><h3>${esc(titulo)}</h3>${valores.length?valores.map(([nome,valor],i)=>{const a=acao?acao(nome,valor,i):'';return `<div class="metric-bar${a?' clickable-bar':''}"${a?` role="button" tabindex="0" title="Clique para ver os detalhes" onclick="${esc(a)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"`:''}><span>${esc(nome)}</span><div class="progress-bar"><span style="width:${Math.abs(valor)/max*100}%;background:${['#667eea','#38b2ac','#ed8936','#9f7aea'][i%4]}"></span></div><strong>${money(valor)}</strong></div>`;}).join(''):'<div class="ctx-empty">Nenhum lançamento no período selecionado.</div>'}</div>`;
         }
         function agrupar(a, chave) { let m={}; a.forEach(x=>{let k=x[chave]||'Outros';m[k]=(m[k]||0)+Number(x.valor||0);}); return Object.entries(m); }
         function graficoDaVisao(type) {
             if(type==='contas') return graficoBarras('Saldos atuais por conta',dados.contas.map(c=>[c.nome,c.saldo]));
             if(type==='cartoes') return graficoFaturasCartoes();
-            if(type==='parcelamentos') return graficoBarras('Parcelas no período por cartão',agrupar(dados.despesas.filter(x=>x.parcelas>1&&emPeriodo(x)),'origem'));
-            if(type==='despesas') return graficoBarras('Despesas por categoria no período',agrupar(dados.despesas.filter(emPeriodo),'categoria'));
-            if(type==='recebimentos') return graficoBarras('Recebimentos por destino no período',agrupar(dados.recebimentos.filter(emPeriodo),'conta'));
-            if(type==='planejamento') return graficoBarras('Metas por situação no período',agrupar(dados.planejamentos.filter(emPeriodo),'status'));
+            if(type==='parcelamentos') return graficoBarras('Parcelas no período por cartão',agrupar(dados.despesas.filter(x=>x.parcelas>1&&emPeriodo(x)),'origem'),n=>regQuadro(()=>({titulo:'Parcelas — '+String(n).replace('cartao_',''),html:quadroTabela(dados.despesas.filter(x=>x.parcelas>1&&emPeriodo(x)&&(x.origem||'Outros')===n).map(itDesp))})));
+            if(type==='despesas') return graficoBarras('Despesas por categoria no período',agrupar(dados.despesas.filter(emPeriodo),'categoria'),n=>`selecionarVisao('detalhe_categoria',${JSON.stringify(n)})`);
+            if(type==='recebimentos') return graficoBarras('Recebimentos por destino no período',agrupar(dados.recebimentos.filter(emPeriodo),'conta'),n=>regQuadro(()=>({titulo:'Recebimentos — '+n,html:quadroTabela(dados.recebimentos.filter(x=>emPeriodo(x)&&(x.conta||'Outros')===n).map(itRec))+(n==='Dinheiro'||dados.contas.some(c=>c.nome===n)?botaoQuadro('Abrir conta →','detalhe_conta',n):'')})));
+            if(type==='planejamento') return graficoBarras('Metas por situação no período',agrupar(dados.planejamentos.filter(emPeriodo),'status'),n=>regQuadro(()=>({titulo:'Metas — '+n,html:quadroTabela(dados.planejamentos.filter(x=>emPeriodo(x)&&(x.status||'Outros')===n).map(itPlan))})));
             return '';
         }
         function faturaCartao(c) { return sum(dados.despesas.filter(x=>x.origem==='cartao_'+c.nome&&x.data.slice(0,7)===getGlobalTargetYM())); }
+        const pendenteCartao=x=>!['Pago','Cancelado'].includes(x.status||'Pendente');
+        // Limite usado = lançamentos pendentes do mês selecionado + parcelas pendentes de meses posteriores (reservam o limite).
+        function reservaFuturaCartao(c) {const fim=getGlobalTargetYM()+'-31';return sum(dados.despesas.filter(x=>x.origem==='cartao_'+c.nome&&(Number(x.parcelas)||1)>1&&x.data>fim&&pendenteCartao(x)));}
+        function usadoLimiteCartao(c) {return sum(dados.despesas.filter(x=>x.origem==='cartao_'+c.nome&&x.data.slice(0,7)===getGlobalTargetYM()&&pendenteCartao(x)))+reservaFuturaCartao(c);}
+        function totalUsadoLimite() {return dados.cartoes.reduce((v,c)=>v+usadoLimiteCartao(c),0);}
         function totalFaturasMes() { return dados.cartoes.reduce((v,c)=>v+faturaCartao(c),0); }
         function corDisponibilidade(livre,limite) {
             const percentual=limite>0?livre/limite*100:0;
@@ -1202,61 +1275,53 @@
         function pctCartao(valor,total) { return total>0?(valor/total*100).toFixed(1)+'%':'0,0%'; }
         function graficoFaturasCartoes() {
             const total=totalFaturasMes();
-            return `<div class="ctx-box metric-chart"><h3>Faturas mensais por cartão</h3><p class="period-note">Clique em um cartão para conferir seus lançamentos. A cor da barra representa a disponibilidade do limite.</p>${dados.cartoes.length?dados.cartoes.map(c=>{
-                const f=faturaCartao(c),lim=Number(c.limite)||0,livre=lim-f;
-                return `<div class="card-indicator-line" role="button" tabindex="0" onclick="${chamada('detalhe_cartao',c.nome)}" onkeydown="if(event.key==='Enter')this.click()"><span>${esc(c.nome)}<small>${pctCartao(f,total)} do total das faturas</small></span><div><div class="card-limit-bar"><span style="width:${Math.max(0,Math.min(100,lim>0?livre/lim*100:0))}%;background:${corDisponibilidade(livre,lim)}"></span></div><small>Disponível: ${pctCartao(Math.max(0,livre),lim)} do limite</small></div><strong>${money(f)}</strong></div>`;
+            return `<div class="ctx-box metric-chart"><h3>Faturas mensais por cartão</h3><p class="period-note">Clique em um cartão para conferir seus lançamentos. A cor da barra e dos valores livres representa a disponibilidade do limite. O limite usado considera a fatura pendente do mês e as parcelas futuras ainda não pagas.</p>${dados.cartoes.length?dados.cartoes.map(c=>{
+                const f=faturaCartao(c),res=reservaFuturaCartao(c),u=usadoLimiteCartao(c),lim=Number(c.limite)||0,livre=lim-u,livreOk=Math.max(0,livre),cor=corDisponibilidade(livre,lim);
+                return `<div class="card-indicator-line" role="button" tabindex="0" onclick="${chamada('detalhe_cartao',c.nome)}" onkeydown="if(event.key==='Enter')this.click()"><span>${esc(c.nome)}<small>${pctCartao(f,total)} do total das faturas</small></span><div><div class="card-limit-values"><span>Usado: <b>${money(u)}</b></span><span>Livre: <b style="color:${cor}">${money(livreOk)}</b> / ${money(lim)}</span></div><div class="card-limit-bar"><span style="width:${Math.max(0,Math.min(100,lim>0?livre/lim*100:0))}%;background:${cor}"></span></div><small style="color:${cor};font-weight:600">Disponível: ${pctCartao(livreOk,lim)} do limite</small><small>Usado = fatura do mês ${money(f)} + parcelas futuras ${money(res)}</small></div><strong>${money(f)}<small style="display:block;font-weight:400">fatura do mês</small></strong></div>`;
             }).join(''):'<p class="ctx-empty">Nenhum cartão cadastrado.</p>'}${legendaLimites()}</div>`;
         }
-        function cartoesKpi(titulo,valor,tipo,subtexto='',cartao=null) {
-            return `<div class="ctx-kpi kpi-action" role="button" tabindex="0" onclick="selecionarVisao('detalhe_cartoes_kpi','${tipo}${cartao?':'+encodeURIComponent(cartao):''}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"><small>${titulo}</small><strong>${money(valor)}</strong>${subtexto?`<small style="margin-top:6px">${subtexto}</small>`:''}</div>`;
+        function cartoesKpi(titulo,valor,tipo,subtexto='',cartao=null,cor='') {
+            return `<div class="ctx-kpi kpi-action" role="button" tabindex="0" onclick="selecionarVisao('detalhe_cartoes_kpi','${tipo}${cartao?':'+encodeURIComponent(cartao):''}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"><small>${titulo}</small><strong${cor?` style="color:${cor}"`:''}>${money(valor)}</strong>${subtexto?`<small style="margin-top:6px${cor?';color:'+cor:''}">${subtexto}</small>`:''}</div>`;
         }
         function renderListaCartoes() {
-            const limite=sum(dados.cartoes,'limite'),fatura=totalFaturasMes(),livre=limite-fatura,lancamentos=sum(dados.despesas.filter(x=>(x.origem||'').startsWith('cartao_')&&emPeriodo(x)));
-            const kpis=`<div class="ctx-kpis">${cartoesKpi('Limite total',limite,'limite','100% dos limites cadastrados')}${cartoesKpi('Usado / faturas do mês',fatura,'usado',pctCartao(fatura,limite)+' do limite total')}${cartoesKpi('Livre no mês (limite − fatura)',livre,'livre',pctCartao(Math.max(0,livre),limite)+' disponível')}${cartoesKpi('Lançamentos do período',lancamentos,'lancamentos',pctCartao(lancamentos,fatura)+' das faturas do mês')}</div>`;
-            const nota='<p class="period-note">Usado e livre referem-se ao mês selecionado; no modo Dia, os detalhes filtram os lançamentos pela data. Livre é a diferença entre limite e fatura, sem considerar reservas de limite das parcelas futuras.</p>';
-            const tabela=`<div class="ctx-box"><table class="card-summary-table"><thead><tr><th>Cartão</th><th>Vencimento</th><th>Limite / participação</th><th>Usado / participação da fatura</th><th>Livre / disponibilidade</th></tr></thead><tbody>${dados.cartoes.length?dados.cartoes.map(c=>{
-                const valor=faturaCartao(c),lim=Number(c.limite)||0,liv=lim-valor,cor=corDisponibilidade(liv,lim),pLivre=lim>0?liv/lim*100:0;
-                return `<tr class="clickable-row" onclick="${chamada('detalhe_cartao',c.nome)}" title="Clique para acessar o cartão"><td><strong>${esc(c.nome)}</strong></td><td>Dia ${esc(c.vencimento)}${c.fechamento?`<small>Fecha dia ${esc(c.fechamento)}</small>`:''}</td><td>${money(lim)}<small>${pctCartao(lim,limite)} do limite total</small></td><td>${money(valor)}<small>${pctCartao(valor,fatura)} das faturas · ${pctCartao(valor,lim)} do próprio limite</small></td><td><strong style="color:${cor}">${money(liv)}</strong><small>${pLivre.toFixed(1)}% disponível</small><div class="card-limit-bar"><span style="background:${cor};width:${Math.max(0,Math.min(100,pLivre))}%"></span></div></td></tr>`;
+            const limite=sum(dados.cartoes,'limite'),fatura=totalFaturasMes(),usado=totalUsadoLimite(),livre=limite-usado,lancamentos=sum(dados.despesas.filter(x=>(x.origem||'').startsWith('cartao_')&&emPeriodo(x)));
+            const kpis=`<div class="ctx-kpis">${cartoesKpi('Limite total',limite,'limite','100% dos limites cadastrados')}${cartoesKpi('Limite usado (fatura + parcelas futuras)',usado,'usado',pctCartao(usado,limite)+' do limite total')}${cartoesKpi('Limite livre (limite − usado)',livre,'livre',pctCartao(Math.max(0,livre),limite)+' disponível',null,corDisponibilidade(livre,limite))}${cartoesKpi('Lançamentos do período',lancamentos,'lancamentos',pctCartao(lancamentos,fatura)+' das faturas do mês')}</div>`;
+            const nota='<p class="period-note">Usado e livre referem-se ao mês selecionado: o limite usado soma as despesas pendentes do mês e as parcelas futuras ainda não pagas (que reservam limite). Itens pagos ou cancelados liberam o limite.</p>';
+            const tabela=`<div class="ctx-box"><table class="card-summary-table"><thead><tr><th>Cartão</th><th>Vencimento</th><th>Limite / participação</th><th>Limite usado (fatura + parcelas futuras)</th><th>Livre / disponibilidade</th></tr></thead><tbody>${dados.cartoes.length?dados.cartoes.map(c=>{
+                const fat=faturaCartao(c),valor=usadoLimiteCartao(c),lim=Number(c.limite)||0,liv=lim-valor,cor=corDisponibilidade(liv,lim),pLivre=lim>0?liv/lim*100:0;
+                return `<tr class="clickable-row" onclick="${chamada('detalhe_cartao',c.nome)}" title="Clique para acessar o cartão"><td><strong>${esc(c.nome)}</strong></td><td>Dia ${esc(c.vencimento)}${c.fechamento?`<small>Fecha dia ${esc(c.fechamento)}</small>`:''}</td><td>${money(lim)}<small>${pctCartao(lim,limite)} do limite total</small></td><td>${money(valor)}<small>Fatura do mês ${money(fat)} + parcelas futuras ${money(reservaFuturaCartao(c))} · ${pctCartao(valor,lim)} do próprio limite</small></td><td><strong style="color:${cor}">${money(liv)}</strong><small style="color:${cor};font-weight:600">${pLivre.toFixed(1)}% disponível</small><div class="card-limit-bar"><span style="background:${cor};width:${Math.max(0,Math.min(100,pLivre))}%"></span></div></td></tr>`;
             }).join(''):'<tr><td colspan="5" class="ctx-empty">Nenhum cartão cadastrado.</td></tr>'}</tbody></table>${legendaLimites()}</div>`;
             return kpis+nota+tabela;
         }
         function renderDetalheIndicadorCartoes(tipo) {
             const [indicador,codCartao]=String(tipo).split(':');const nomeCartao=codCartao?decodeURIComponent(codCartao):null;tipo=indicador;
-            const labels={limite:'Limite total dos cartões',usado:'Faturas do mês',livre:'Limites disponíveis',lancamentos:'Lançamentos do período'};
+            const labels={limite:'Limite total dos cartões',usado:'Limite usado (fatura + parcelas futuras)',livre:'Limites disponíveis',lancamentos:'Lançamentos do período'};
             if(!labels[tipo])return navegarVoltar();
             header('💳 '+labels[tipo]+(nomeCartao?' — '+nomeCartao:''),null,'COMPOSIÇÃO DOS CARTÕES');
-            const limite=sum(dados.cartoes,'limite'),fatura=totalFaturasMes();
-            const totalRef=tipo==='limite'||tipo==='livre'?limite:fatura;
+            const limite=sum(dados.cartoes,'limite'),fatura=totalFaturasMes(),usadoTot=totalUsadoLimite();
+            const totalRef=tipo==='limite'||tipo==='livre'?limite:tipo==='usado'?usadoTot:fatura;
             const selecionados=nomeCartao?dados.cartoes.filter(c=>c.nome===nomeCartao):dados.cartoes;
             const linhas=selecionados.map(c=>{
-                const lim=Number(c.limite)||0, f=faturaCartao(c),lanc=sum(dados.despesas.filter(x=>x.origem==='cartao_'+c.nome&&emPeriodo(x)));
+                const lim=Number(c.limite)||0, f=usadoLimiteCartao(c),lanc=sum(dados.despesas.filter(x=>x.origem==='cartao_'+c.nome&&emPeriodo(x)));
                 const valor=tipo==='limite'?lim:tipo==='usado'?f:tipo==='livre'?lim-f:lanc;
-                return `<tr class="clickable-row" onclick="${chamada('detalhe_cartao',c.nome)}"><td><strong>${esc(c.nome)}</strong></td><td>${money(valor)}</td><td>${pctCartao(valor,totalRef)}</td><td>${pctCartao(f,lim)}</td><td>${pctCartao(Math.max(0,lim-f),lim)}</td><td>Ver lançamentos →</td></tr>`;
+                return `<tr class="clickable-row" onclick="${chamada('detalhe_cartao',c.nome)}"><td><strong>${esc(c.nome)}</strong></td><td>${money(valor)}</td><td>${pctCartao(valor,totalRef)}</td><td>${pctCartao(f,lim)}</td><td style="color:${corDisponibilidade(lim-f,lim)};font-weight:600">${pctCartao(Math.max(0,lim-f),lim)}</td><td>Ver lançamentos →</td></tr>`;
             }).join('');
             const despesas=dados.despesas.filter(x=>(x.origem||'').startsWith('cartao_')&&(!nomeCartao||x.origem==='cartao_'+nomeCartao)&&emPeriodo(x));
-            document.getElementById('contextContent').innerHTML=`<p class="period-note">Os percentuais indicam a participação de cada cartão no total correspondente. Clique em cada linha para consultar seus lançamentos.</p><div class="ctx-box"><table><thead><tr><th>Cartão</th><th>Valor</th><th>% do total</th><th>% usado do limite</th><th>% livre do limite</th><th>Detalhes</th></tr></thead><tbody>${linhas||'<tr><td colspan="6">Nenhum cartão.</td></tr>'}</tbody></table>${legendaLimites()}</div>${(tipo==='lancamentos'||nomeCartao)?`<h3 style="margin:18px 0 8px">Lançamentos e datas relacionados</h3>${tabelaLancamentos(despesas)}`:''}`;
+            document.getElementById('contextContent').innerHTML=`<p class="period-note">Os percentuais indicam a participação de cada cartão no total correspondente. Clique em cada linha para consultar seus lançamentos.</p><div class="ctx-box"><table><thead><tr><th>Cartão</th><th>Valor</th><th>% do total</th><th>% usado do limite</th><th>% livre do limite</th><th>Detalhes</th></tr></thead><tbody>${linhas||'<tr><td colspan="6">Nenhum cartão.</td></tr>'}</tbody></table>${legendaLimites()}</div>${(tipo==='lancamentos'||nomeCartao)?`<h3 style="margin:18px 0 8px">Lançamentos e datas relacionados</h3>${tabelaLancamentos(despesas)}`:''}${(tipo==='usado'||tipo==='livre')?(()=>{const fim=getGlobalTargetYM()+'-31',res=dados.despesas.filter(x=>selecionados.some(c=>x.origem==='cartao_'+c.nome)&&(Number(x.parcelas)||1)>1&&x.data>fim&&pendenteCartao(x));return `<h3 style="margin:18px 0 8px">Parcelas futuras que reservam limite (${money(sum(res))})</h3>${tabelaLancamentos(res)}`;})():''}`;
         }
 
-                function renderListaContas() {
-            return `<div class="ctx-kpis">${kpi('Dinheiro atual',money(dados.dinheiroFisico))}${kpi('Saldo atual em contas',money(sum(dados.contas,'saldo')))}${kpi('Entradas do período',money(sum(dados.recebimentos.filter(emPeriodo))))}${kpi('Saídas em contas no período',money(sum(dados.despesas.filter(x=>x.origem.startsWith('conta_')&&emPeriodo(x)))))}</div><p class="period-note">Os saldos cadastrados são atuais; o período filtra os lançamentos, sem reconstruir saldos históricos.</p><div class="ctx-box"><table><thead><tr><th>Conta</th><th>Tipo</th><th>Saldo atual</th></tr></thead><tbody>${[{nome:'Dinheiro',tipo:'Espécie',saldo:dados.dinheiroFisico},...dados.contas].map(c=>`<tr class="clickable-row" onclick="${chamada('detalhe_conta',c.nome)}" title="Clique para acessar a conta"><td><strong>${esc(c.nome)}</strong>${infoConta(c)}</td><td>${esc(c.tipo)}</td><td>${money(c.saldo)}</td></tr>`).join('')}</tbody></table></div>`;
-        }
+        function renderListaContas() { return ''; }
 
                 function tabelaLancamentos(saidas,entradas=[],edicaoDireta=false) {
             let itens=[...saidas.map(x=>({...x,entrada:false})),...entradas.map(x=>({...x,entrada:true}))].sort((a,b)=>a.data.localeCompare(b.data));
             return `<div class="ctx-box"><table><thead><tr><th>Data</th><th>Lançamento</th><th>Tipo / parcela</th><th>Status</th><th>Valor</th><th>Editar</th></tr></thead><tbody>${itens.length?itens.map(x=>`<tr class="clickable-row" onclick="${edicaoDireta?esc(`abrirModalDespesa(${JSON.stringify(x.id)})`):chamada(x.entrada?'detalhe_recebimento':'detalhe_despesa',x.id)}"><td>${formatarData(x.data)}</td><td>${esc(x.titulo)}</td><td>${x.entrada?'Entrada':x.numeroParcela?`${x.numeroParcela}/${x.parcelas}`:'Saída'}</td><td>${statusControle(x.entrada?'recebimentos':'despesas',x)}</td><td>${x.entrada?'+':'−'} ${money(x.valor)}</td><td><button class="inline-edit-button" type="button" aria-label="Editar lançamento" onclick="event.stopPropagation();${esc(`abrirModal${x.entrada?'Recebimento':'Despesa'}(${JSON.stringify(x.id)})`)}">✏️</button></td></tr>`).join(''):'<tr><td colspan="6" class="ctx-empty">Nenhum lançamento no período.</td></tr>'}</tbody></table></div>`;
         }
 
-                function renderDetalheConta(nome) {
-            let c=dados.contas.find(x=>x.nome===nome); if(!c&&nome!=='Dinheiro') return navegarVoltar();
-            let d=dados.despesas.filter(x=>x.origem===(nome==='Dinheiro'?'dinheiro':'conta_'+nome)&&emPeriodo(x)),r=dados.recebimentos.filter(x=>x.conta===nome&&emPeriodo(x));
-            header('🏦 '+nome,{text:'+ Transferir',fn:()=>abrirTransferencia()},'LANÇAMENTOS DA CONTA');
-            document.getElementById('contextContent').innerHTML=`<div class="ctx-kpis">${kpi('Saldo atual cadastrado',money(c?c.saldo:dados.dinheiroFisico))}${kpi('Entradas no período',money(sum(r)))}${kpi('Saídas no período',money(sum(d)))}</div>`+graficoBarras('Movimentação no período',[['Entradas',sum(r)],['Saídas',sum(d)]])+tabelaLancamentos(d,r)+tabelaTransferenciasConta(nome);
-        }
         function renderDetalheCartao(nome) {
             let c=dados.cartoes.find(x=>x.nome===nome); if(!c) return navegarVoltar();
-            let d=dados.despesas.filter(x=>x.origem==='cartao_'+nome&&emPeriodo(x)),f=faturaCartao(c);
+            let d=dados.despesas.filter(x=>x.origem==='cartao_'+nome&&emPeriodo(x)),f=usadoLimiteCartao(c),fat=faturaCartao(c),res=reservaFuturaCartao(c);
             header('💳 '+nome,{text:'+ Criar Parcelamento',fn:()=>abrirModalParcelamento(nome)},'LANÇAMENTOS DO CARTÃO');
-            document.getElementById('contextContent').innerHTML=`<div class="ctx-kpis">${cartoesKpi('Limite total',c.limite,'limite',pctCartao(c.limite,sum(dados.cartoes,'limite'))+' do total',c.nome)}${cartoesKpi('Usado / fatura mensal',f,'usado',pctCartao(f,c.limite)+' do limite',c.nome)}${cartoesKpi('Livre no mês',c.limite-f,'livre',pctCartao(Math.max(0,c.limite-f),c.limite)+' disponível',c.nome)}${kpi('Vencimento','Dia '+c.vencimento)}</div>`+graficoBarras('Gastos do período por categoria',agrupar(d,'categoria'))+tabelaLancamentos(d);
+            document.getElementById('contextContent').innerHTML=`<div class="ctx-kpis">${cartoesKpi('Limite total',c.limite,'limite',pctCartao(c.limite,sum(dados.cartoes,'limite'))+' do total',c.nome)}${cartoesKpi('Limite usado',f,'usado',pctCartao(f,c.limite)+' do limite · fatura '+money(fat)+' + parcelas futuras '+money(res),c.nome)}${cartoesKpi('Limite livre',c.limite-f,'livre',pctCartao(Math.max(0,c.limite-f),c.limite)+' disponível',c.nome,corDisponibilidade(c.limite-f,c.limite))}${kpi('Vencimento','Dia '+c.vencimento)}</div>`+graficoBarras('Gastos do período por categoria',agrupar(d,'categoria'),n=>regQuadro(()=>({titulo:`${nome} — ${n}`,html:quadroTabela(d.filter(x=>(x.categoria||'Outros')===n).map(itDesp))})))+tabelaLancamentos(d);
         }
         function gruposParcelas() {
             let grupos=new Map(); dados.despesas.filter(x=>x.parcelas>1).forEach(x=>{let key=x.parcelamentoId||x.origem+'|'+x.titulo.replace(/\s*\(\d+\/\d+\)$/,''); if(!grupos.has(key)) grupos.set(key,[]); grupos.get(key).push(x);}); return grupos;
@@ -1322,6 +1387,7 @@
         function garantirModulos() {
             if(!Array.isArray(dados.investimentos)) dados.investimentos=[];
             if(!Array.isArray(dados.transferencias)) dados.transferencias=[];
+            if(!Array.isArray(dados.movContas)) dados.movContas=[];
             if(!Array.isArray(dados.tiposInvestimento)) dados.tiposInvestimento=[];
             dados.investimentos.forEach(x => {if(!Array.isArray(x.movimentos)) x.movimentos=[];if(!x.extras)x.extras={};});
         }
@@ -1380,11 +1446,26 @@
                 custo:arr.reduce((s,x)=>s+x.analise.principal,0),recebidos:arr.reduce((s,x)=>s+x.analise.recebidos,0),resultado:arr.reduce((s,x)=>s+x.analise.resultado+(x.analise.realizado||0),0)};
         }
         function botaoInv(label,onclick,cor='btn-primary') {return `<button type="button" class="btn ${cor}" onclick="${esc(onclick)}">${esc(label)}</button>`;}
+        // Estado dos blocos expansíveis (mantém abertos os já abertos quando a tela é redesenhada)
+        const invAbertos=new Set();
+        window.invToggle=(k,aberto)=>{aberto?invAbertos.add(k):invAbertos.delete(k);};
+        const invAbre=k=>invAbertos.has(k)?' open':'';
+        const invTogAttr=k=>`ontoggle="${esc(`invToggle(${JSON.stringify(k)},this.open)`)}"`;
+        const ordemAlfa=(a,b)=>String(a).localeCompare(String(b),'pt-BR',{sensitivity:'base'});
+        function agruparInvPorTipo(arr,ctx) {
+            if(!arr.length) return tabelaInv(arr);
+            const tipos=[...new Set(arr.map(x=>x.tipo||'Sem tipo'))].sort(ordemAlfa);
+            return tipos.map(t=>{
+                const itens=arr.filter(x=>(x.tipo||'Sem tipo')===t).sort((a,b)=>ordemAlfa(a.nome,b.nome));
+                const k='grupo|'+ctx+'|'+t, total=itens.reduce((s,x)=>s+invAnalise(x).valor,0);
+                return `<details class="ctx-box inv-group"${invAbre(k)} ${invTogAttr(k)}><summary><strong>${esc(t)}</strong><span class="inv-group-meta">${itens.length} ${itens.length===1?'aplicação':'aplicações'} · ${money(total)}</span></summary><div class="inv-group-body">${tabelaInv(itens,true)}</div></details>`;
+            }).join('');
+        }
         function linhaTabelaInv(inv) {
             const a=invAnalise(inv), r=ivNum(a.resultado), variavel=inv.classe==='variavel';
-            return `<tr class="clickable-row" onclick="${chamada('detalhe_investimento',inv.id)}"><td><strong>${esc(inv.nome)}</strong><small class="subtle-line">${esc(inv.codigo||inv.tipo)}</small></td><td>${esc(inv.tipo)}</td><td>${variavel?ivQtd(a.qtd)+' unidades':money(a.principal)}</td><td>${money(a.valor)}</td><td style="color:${r>=0?'var(--ok)':'var(--bad)'}">${money(r)}</td><td>Visualizar →</td></tr>`;
+            return `<tr class="clickable-row" onclick="${chamada('detalhe_investimento',inv.id)}"><td><strong>${esc(inv.nome)}</strong><small class="subtle-line">${esc(inv.codigo||inv.tipo)}</small></td><td>${esc(inv.tipo)}</td><td>${esc(inv.contaInv||'—')}</td><td>${variavel?ivQtd(a.qtd)+' unidades':money(a.principal)}</td><td>${money(a.valor)}</td><td style="color:${r>=0?'var(--ok)':'var(--bad)'}">${money(r)}</td><td>Visualizar →</td></tr>`;
         }
-        function tabelaInv(arr) {return `<div class="ctx-box"><table><thead><tr><th>Ativo</th><th>Tipo</th><th>${arr.length&&arr.every(x=>x.classe==='fixa')?'Principal':'Cotas / principal'}</th><th>Valor atual / estimado</th><th>Variação*</th><th>Detalhes</th></tr></thead><tbody>${arr.length?arr.map(linhaTabelaInv).join(''):'<tr><td colspan="6" class="ctx-empty">Nenhuma aplicação cadastrada nesta seleção.</td></tr>'}</tbody></table></div>`;}
+        function tabelaInv(arr,interna=false) {const cols='<col style="width:24%"><col style="width:10%"><col style="width:16%"><col style="width:14%"><col style="width:14%"><col style="width:11%"><col style="width:11%">';const tab=`<table${interna?' class="inv-fixed"':''}>${interna?`<colgroup>${cols}</colgroup>`:''}<thead><tr><th>Ativo</th><th>Tipo</th><th>Conta</th><th>${arr.length&&arr.every(x=>x.classe==='fixa')?'Principal':'Cotas / principal'}</th><th>Valor atual / estimado</th><th>Variação*</th><th>Detalhes</th></tr></thead><tbody>${arr.length?arr.map(linhaTabelaInv).join(''):'<tr><td colspan="7" class="ctx-empty">Nenhuma aplicação cadastrada nesta seleção.</td></tr>'}</tbody></table>`;return interna?`<div style="overflow-x:auto">${tab}</div>`:`<div class="ctx-box">${tab}</div>`;}
         function renderInvestimentos() {
             header('📈 Investimentos', {text:'+ Novo investimento',fn:()=>abrirInvestimento()},'CARTEIRA SEPARADA DOS SALDOS');
             const t=resumoCarteira(), total=t.valor;
@@ -1392,17 +1473,22 @@
             document.getElementById('contextContent').innerHTML=`<p class="period-note">Os investimentos são controlados separadamente: não modificam saldos bancários, receitas ou despesas. Valores de mercado são manuais; projeções de renda fixa são estimativas, não garantias.</p>
             ${dados.investimentos.some(x=>x.exemploInvest)?'<p class="period-note" style="border:1px solid var(--line);border-radius:8px;padding:10px"><strong>🧪 Carteira de demonstração:</strong> aplicações e operações marcadas como (demo) ou exemplo foram adicionadas para testar a interface. Todos os preços, cotações, taxas, índices, percentuais, proventos e resultados são fictícios; não refletem o mercado real nem constituem recomendação. Os dados anteriores permanecem preservados.</p>':''}
             <div class="ctx-kpis">${k('Patrimônio investido',total,'investimentos_lista')}${k('Renda Fixa',t.fixa,'investimentos_fixa')}${k('Renda Variável',t.variavel,'investimentos_variavel')}${k('Rendimentos / proventos registrados',t.recebidos,'investimentos_proventos')}</div>
-            <div class="ctx-grid"><div class="ctx-box"><h3>Distribuição da carteira</h3>${[['Renda fixa',t.fixa,'investimentos_fixa','#667eea'],['Renda variável',t.variavel,'investimentos_variavel','#38b2ac']].map(([n,v,view,cor])=>`<div class="category-breakdown drill-action" role="button" tabindex="0" onclick="selecionarVisao('${view}')"><strong>${n}</strong><div class="category-metrics"><div style="display:flex;justify-content:space-between"><span>${money(v)}</span><span>${ivPct(total>0?v/total*100:0)}</span></div><div class="progress-bar"><span style="width:${total>0?v/total*100:0}%;background:${cor}"></span></div></div></div>`).join('')}<div class="inv-dual">${botaoInv('📗 Renda Fixa',"selecionarVisao('investimentos_fixa')")}${botaoInv('📉 Renda Variável',"selecionarVisao('investimentos_variavel')")}</div></div><div class="ctx-box"><h3>Consolidação</h3><div class="ctx-row"><span>Total histórico aportado em compras e aplicações</span><strong>${money(t.aportes)}</strong></div><div class="ctx-row"><span>Custo / principal em aberto</span><strong>${money(t.custo)}</strong></div><div class="ctx-row"><span>Valor atual / estimado</span><strong>${money(t.valor)}</strong></div><div class="ctx-row"><span>Variação + lucro realizado*</span><strong>${money(t.resultado)}</strong></div><div class="ctx-row"><span>Proventos / juros recebidos</span><strong>${money(t.recebidos)}</strong></div><p class="period-note">* Valores indicativos: faltando cotação, renda variável usa custo médio; renda fixa usa projeção, salvo saldo manual informado. Proventos não são somados ao patrimônio investido.</p></div></div>
-            <h3 class="section-heading">Ativos cadastrados</h3>${tabelaInv(dados.investimentos)}${renderHistoricoInvestimentos()}${renderVencimentosInvestimentos()}<div class="inv-toolbar">${botaoInv('+ Novo investimento','abrirInvestimento()')}${botaoInv('+ Novo tipo','abrirNovoTipo()', 'btn-back')}</div>`;
+            <div class="ctx-grid"><div class="ctx-box inv-dist"><h3>Distribuição da carteira</h3>${[['Renda fixa',t.fixa,'investimentos_fixa','#667eea'],['Renda variável',t.variavel,'investimentos_variavel','#38b2ac']].map(([n,v,view,cor])=>`<div class="category-breakdown drill-action" role="button" tabindex="0" onclick="selecionarVisao('${view}')"><strong>${n}</strong><div class="category-metrics"><div style="display:flex;justify-content:space-between"><span>${money(v)}</span><span>${ivPct(total>0?v/total*100:0)}</span></div><div class="progress-bar"><span style="width:${total>0?v/total*100:0}%;background:${cor}"></span></div></div></div>`).join('')}</div><div class="ctx-box"><h3>Consolidação</h3><div class="ctx-row"><span>Total histórico aportado em compras e aplicações</span><strong>${money(t.aportes)}</strong></div><div class="ctx-row"><span>Custo / principal em aberto</span><strong>${money(t.custo)}</strong></div><div class="ctx-row"><span>Valor atual / estimado</span><strong>${money(t.valor)}</strong></div><div class="ctx-row"><span>Variação + lucro realizado*</span><strong>${money(t.resultado)}</strong></div><div class="ctx-row"><span>Proventos / juros recebidos</span><strong>${money(t.recebidos)}</strong></div><p class="period-note">* Valores indicativos: faltando cotação, renda variável usa custo médio; renda fixa usa projeção, salvo saldo manual informado. Proventos não são somados ao patrimônio investido.</p></div></div>
+            ${patrimonioPorContaInv().length?graficoBarras('Patrimônio por conta de investimento',patrimonioPorContaInv(),acaoContaInv):''}${renderHistoricoInvestimentos()}${renderVencimentosInvestimentos()}<div class="inv-toolbar">${botaoInv('+ Novo investimento','abrirInvestimento()')}${botaoInv('+ Novo tipo','abrirNovoTipo()', 'btn-back')}</div>`;
         }
         function renderInvestClasse(classe) {
             invClasseAtual=classe; const nome=classe==='fixa'?'Renda Fixa':'Renda Variável';
-            header((classe==='fixa'?'📗 ':'📉 ')+nome,{text:'+ Adicionar aplicação',fn:()=>abrirInvestimento(null,classe)},'INVESTIMENTOS');
+            header((classe==='fixa'?'📗 ':'📉 ')+nome,{text:'+ Cadastrar outro tipo',fn:()=>abrirNovoTipo(classe)},'INVESTIMENTOS',{text:'+ Novo investimento',fn:()=>abrirInvestimento(null,classe)});
             const a=dados.investimentos.filter(x=>x.classe===classe);
-            document.getElementById('contextContent').innerHTML=`<p class="period-note">Selecione um tipo para ler o resumo, ver os ativos existentes ou adicionar novos. Clique num ativo para visualizar os aportes, operações e indicadores.</p>
+            const blocos=tiposDeInv(classe).slice().sort((x,y)=>ordemAlfa(x.nome,y.nome)).map(t=>{
+                const itens=a.filter(x=>x.tipo===t.nome).sort((p,q)=>ordemAlfa(p.nome,q.nome)||ordemAlfa(p.contaInv||'',q.contaInv||'')),k='tipo|'+classe+'|'+t.nome,total=itens.reduce((s,x)=>s+invAnalise(x).valor,0);
+                return `<details class="ctx-box inv-explica"${invAbre(k)} ${invTogAttr(k)}><summary><strong>${esc(t.nome)}</strong><span class="inv-group-meta">${itens.length} ${itens.length===1?'aplicação':'aplicações'} · ${money(total)}</span></summary><div class="inv-explica-body"><p class="inv-description">${esc(t.descricao)}</p>${tabelaInv(itens,true)}</div></details>`;
+            }).join('');
+            const porConta=patrimonioPorContaInv(classe);
+            document.getElementById('contextContent').innerHTML=`<p class="period-note">Abra um tipo para ler o resumo e ver as aplicações agrupadas. Clique num ativo para visualizar os aportes, operações e indicadores.</p>
             <div class="ctx-kpis"><div class="ctx-kpi"><small>Total em ${nome}</small><strong>${money(a.reduce((s,x)=>s+invAnalise(x).valor,0))}</strong></div><div class="ctx-kpi"><small>Aplicações cadastradas</small><strong>${a.length}</strong></div></div>
-            <div class="inv-catalog">${tiposDeInv(classe).map(t=>`<div class="ctx-box inv-type" role="button" tabindex="0" onclick="${esc(`selecionarVisao('investimentos_tipo',${JSON.stringify(classe+'|'+t.nome)})`)}"><strong>${esc(t.nome)}</strong><p>${esc(t.descricao)}</p><small>${a.filter(x=>x.tipo===t.nome).length} aplicação(ões) · Consultar →</small></div>`).join('')}</div>
-            <div class="inv-toolbar">${botaoInv('+ Novo investimento',`abrirInvestimento(null,'${classe}')`)}${botaoInv('+ Cadastrar outro tipo',`abrirNovoTipo('${classe}')`,'btn-back')}</div><h3 class="section-heading">Todas as aplicações</h3>${tabelaInv(a)}`;
+            ${porConta.length?graficoBarras('Patrimônio em '+nome+' por conta de investimento',porConta,acaoContaInv):''}
+            <div class="inv-catalog">${blocos}</div>`;
         }
         function renderInvestTipo(param) {
             let [classe,...nomeParts]=String(param||'').split('|'), nome=nomeParts.join('|'), tipo=tipoDef(classe,nome);
@@ -1412,12 +1498,12 @@
             document.getElementById('contextContent').innerHTML=`<div class="ctx-box"><h3>Como funciona</h3><p class="inv-description">${esc(tipo.descricao)}</p><p class="period-note">Os indicadores dependem dos valores que você registrar e não substituem informações oficiais do emissor ou cotação.</p></div>
             <div class="ctx-kpis"><div class="ctx-kpi"><small>Aplicações cadastradas</small><strong>${a.length}</strong></div><div class="ctx-kpi"><small>Patrimônio no tipo</small><strong>${money(a.reduce((s,x)=>s+invAnalise(x).valor,0))}</strong></div></div>${tabelaInv(a)}<div class="inv-toolbar">${botaoInv('+ Adicionar aplicação',`abrirInvestimento(null,${JSON.stringify(classe)},${JSON.stringify(nome)})`)}</div>`;
         }
-        function renderInvestLista() {header('📊 Aplicações da carteira',null,'INVESTIMENTOS');document.getElementById('contextContent').innerHTML=tabelaInv(dados.investimentos);}
+        function renderInvestLista() {header('📊 Aplicações da carteira',null,'INVESTIMENTOS');document.getElementById('contextContent').innerHTML=agruparInvPorTipo(dados.investimentos,'lista');}
         function renderDetalheInvestimento(id) {
             const i=dados.investimentos.find(x=>x.id===id);if(!i)return navegarVoltar();const a=invAnalise(i),fixa=i.classe==='fixa';
             header('📈 '+i.nome,{text:'+ Lançamento',fn:()=>abrirMovInvest(i.id)},fixa?'DETALHE RENDA FIXA':'DETALHE RENDA VARIÁVEL');
             const tipo=tipoDef(i.classe,i.tipo), campos=Object.entries(i.extras||{}).filter(([k,v])=>v!==''&&v!==null&&v!==undefined);
-            let infos=`<div class="ctx-row"><span>Categoria</span><strong>${esc(i.tipo)}</strong></div><div class="ctx-row"><span>Instituição / custódia</span><strong>${esc(i.instituicao||'—')}</strong></div><div class="ctx-row"><span>Código / identificação</span><strong>${esc(i.codigo||'—')}</strong></div><div class="ctx-row"><span>Data inicial</span><strong>${i.dataInicio?formatarData(i.dataInicio):'—'}</strong></div>`;
+            let infos=`<div class="ctx-row"><span>Categoria</span><strong>${esc(i.tipo)}</strong></div><div class="ctx-row"><span>Instituição / custódia</span><strong>${esc(i.instituicao||'—')}</strong></div><div class="ctx-row"><span>Conta de investimento</span><strong>${i.contaInv?`<a href="#" onclick="${chamada('detalhe_conta',i.contaInv)};return false">${esc(i.contaInv)}</a>`:'—'}</strong></div><div class="ctx-row"><span>Código / identificação</span><strong>${esc(i.codigo||'—')}</strong></div><div class="ctx-row"><span>Data inicial</span><strong>${i.dataInicio?formatarData(i.dataInicio):'—'}</strong></div>`;
             if(fixa) infos+=`<div class="ctx-row"><span>Indexador</span><strong>${esc(i.indexador||'Prefixado')}</strong></div><div class="ctx-row"><span>Taxa anual efetiva presumida</span><strong>${ivPct(a.taxa*100)}</strong></div><div class="ctx-row"><span>Taxa contratada</span><strong>${ivPct(ivNum(i.taxaAnual))} a.a.</strong></div><div class="ctx-row"><span>% do indexador</span><strong>${ivPct(ivNum(i.percentualIndexador))}</strong></div><div class="ctx-row"><span>Taxa base hipotética</span><strong>${ivPct(ivNum(i.taxaBase))} a.a.</strong></div><div class="ctx-row"><span>Spread</span><strong>${ivPct(ivNum(i.spread))} a.a.</strong></div><div class="ctx-row"><span>Vencimento</span><strong>${i.vencimento?formatarData(i.vencimento):'Não informado'}</strong></div><div class="ctx-row"><span>Tributação presumida</span><strong>${esc(i.tributacao||'A verificar')}</strong></div>`;
             else infos+=`<div class="ctx-row"><span>Preço médio atual</span><strong>${money(a.medio)}</strong></div><div class="ctx-row"><span>Cotação registrada</span><strong>${a.temCotacao?money(i.cotacaoAtual):'Não informada'}</strong></div><div class="ctx-row"><span>Atualizada em</span><strong>${i.cotacaoData?formatarData(i.cotacaoData):'—'}</strong></div><div class="ctx-row"><span>Lucro realizado em vendas</span><strong>${money(a.realizado)}</strong></div>`;
             infos+=campos.map(([k,v])=>`<div class="ctx-row"><span>${esc(CAMPOS_INV[k]?.[0]||k)}</span><strong>${esc(v)}</strong></div>`).join('');
@@ -1447,7 +1533,7 @@
             if(preferido&&tiposDeInv(classe).some(x=>x.nome===preferido))select.value=preferido;
             renderInvExtras();
         }
-        function abrirInvestimento(id=null,classe='fixa',tipo='') {
+        function abrirInvestimento(id=null,classe='fixa',tipo='',conta='') {
             garantirModulos(); const i=id?dados.investimentos.find(x=>x.id===id):null;if(id&&!i)return;
             document.getElementById('invFormTitle').textContent=i?'✏️ Editar aplicação':'📈 Novo investimento';document.getElementById('invId').value=i?.id||'';
             document.getElementById('invClasse').value=i?.classe||classe;
@@ -1458,7 +1544,7 @@
                 el.value=i?.[map[field]]??(field==='DataInicio'?today():'');
             }
             document.getElementById('invIndexador').value=i?.indexador||'Prefixado';document.getElementById('invTributacao').value=i?.tributacao||'IR regressivo';
-            popularTiposInv(i?.tipo||tipo);openModal('investimentoModal');
+            popularContasInv(i?.contaInv||conta||'');popularTiposInv(i?.tipo||tipo);openModal('investimentoModal');
         }
         function salvarInvestimento() {
             const id=document.getElementById('invId').value,classe=document.getElementById('invClasse').value,tipo=document.getElementById('invTipo').value;
@@ -1468,7 +1554,7 @@
             const fields={nome,tipo,classe};
             for(const [k,key] of Object.entries({Codigo:'codigo',Instituicao:'instituicao',DataInicio:'dataInicio',Vencimento:'vencimento',TaxaAnual:'taxaAnual',TaxaBase:'taxaBase',PercentualIndexador:'percentualIndexador',Spread:'spread',SaldoAtual:'saldoAtual',CotacaoAtual:'cotacaoAtual',CotacaoData:'cotacaoData',Notas:'notas'}))fields[key]=document.getElementById('inv'+k).value;
             fields.indexador=document.getElementById('invIndexador').value;fields.tributacao=document.getElementById('invTributacao').value;
-            fields.extras={};document.querySelectorAll('#invExtras [data-extra]').forEach(el=>fields.extras[el.dataset.extra]=el.value);
+            fields.contaInv=document.getElementById('invConta').value;fields.extras={};document.querySelectorAll('#invExtras [data-extra]').forEach(el=>fields.extras[el.dataset.extra]=el.value);
             if(fields.vencimento&&fields.dataInicio&&fields.vencimento<fields.dataInicio)return showToast('O vencimento não pode anteceder a data inicial.',true);
             if(antigo)Object.assign(antigo,fields);else dados.investimentos.push({id:uid('inv'),movimentos:[],...fields});
             closeModal('investimentoModal');salvarDadosLocal();refresh();if(antigo)selecionarVisao('detalhe_investimento',id);else selecionarVisao('investimentos');showToast('Investimento salvo.');
@@ -1546,7 +1632,7 @@
             const tr=[...dados.transferencias].sort((a,b)=>b.data.localeCompare(a.data));
             const nomes=Object.fromEntries(contasTransferencia().map(x=>[x.chave,x.nome]));
             document.getElementById('contextContent').innerHTML=`<p class="period-note">Transferências movem valores diretamente entre os saldos das contas e dinheiro físico. Não entram como despesas nem receitas. É possível editar ou excluir e os saldos serão revertidos e recalculados.</p>
-                <div class="ctx-kpis">${kpi('Dinheiro físico',money(dados.dinheiroFisico))}${kpi('Saldo nas contas',money(sum(dados.contas,'saldo')))}${kpi('Total disponível',money(ivNum(dados.dinheiroFisico)+sum(dados.contas,'saldo')))}${kpi('Transferido no período',money(sum(tr.filter(emPeriodo))))}</div>
+                <div class="ctx-kpis">${kpi('Dinheiro físico',money(dados.dinheiroFisico))}${kpi('Saldo nas contas',money(saldoContasDisponiveis()))}${kpi('Total disponível',money(ivNum(dados.dinheiroFisico)+saldoContasDisponiveis()))}${kpi('Transferido no período',money(sum(tr.filter(emPeriodo))))}</div>
                 <div class="ctx-box"><h3>Histórico de transferências</h3><table><thead><tr><th>Data</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Editar</th></tr></thead><tbody>${tr.length?tr.map(x=>`<tr><td>${formatarData(x.data)}</td><td>${esc(nomes[x.origem]||x.origem)}</td><td>${esc(nomes[x.destino]||x.destino)}</td><td><strong>${money(x.valor)}</strong>${x.nota?`<small class="subtle-line">${esc(x.nota)}</small>`:''}</td><td class="inv-actions"><button class="inline-edit-button" onclick="abrirTransferencia('${x.id}')" title="Editar transferência">✏️</button><button class="inline-edit-button" onclick="excluirTransferencia('${x.id}')" title="Excluir e reverter">🗑️</button></td></tr>`).join(''):'<tr><td colspan="5" class="ctx-empty">Nenhuma transferência registrada.</td></tr>'}</tbody></table></div>`;
         }
         function abrirTransferencia(id=null) {
@@ -1764,7 +1850,7 @@
             if(fech!==null) cartao.fechamento=fech;
             [['banco','cartaoBanco'],['final','cartaoFinal'],['contaPagamento','cartaoContaPgto'],['notas','cartaoNotas']].forEach(([k,i])=>{ if(val(i)) cartao[k]=val(i); });
             dados.cartoes.push(cartao);
-            fecharERecarregar('cartaoModal','Cartão adicionado!','cartoes');
+            fecharERecarregar('cartaoModal','Cartão adicionado!','cartoes_lista');
         };
 
         // ---------- Criar parcelamento no cartão ----------
@@ -1812,6 +1898,451 @@
             }
             fecharERecarregar('parcelamentoModal',`Parcelamento criado: ${n} parcelas a partir de ${formatarData(data)}.`,'detalhe_parcelamento',pid);
         };
+
+        // =====================================================================
+        // V18: CONTAS E TRANSFERÊNCIAS, CARTÕES E PARCELAMENTOS, GRÁFICOS CLICÁVEIS
+        // =====================================================================
+        const TIPOS_CONTA={
+            'corrente':{nome:'Conta Corrente',icone:'🏦',cor:'#667eea'},
+            'poupança':{nome:'Conta Poupança',icone:'🐖',cor:'#38b2ac'},
+            'investimento':{nome:'Conta Investimento',icone:'📈',cor:'#ed8936'},
+            'previdência':{nome:'Conta Previdência',icone:'🛡️',cor:'#9f7aea'},
+            'dinheiro':{nome:'Dinheiro',icone:'💵',cor:'#48bb78'}
+        };
+        const CORES_LINHAS=['#667eea','#38b2ac','#ed8936','#9f7aea','#e25555','#48bb78','#ecc94b','#4299e1','#d53f8c','#718096'];
+        const tipoConta=c=>{const t=String(c?.tipo||'').toLowerCase();return t.includes('poup')?'poupança':t.includes('invest')?'investimento':t.includes('previd')?'previdência':'corrente';};
+        const contasDoTipo=t=>dados.contas.filter(c=>tipoConta(c)===t);
+        const contasDisponiveis=()=>dados.contas.filter(c=>['corrente','poupança'].includes(tipoConta(c)));
+        const saldoContasDisponiveis=()=>sum(contasDisponiveis(),'saldo');
+        const invDaConta=nome=>dados.investimentos.filter(i=>i.contaInv===nome);
+        const valorInvConta=nome=>invDaConta(nome).reduce((s,i)=>s+invAnalise(i).valor,0);
+        const valorConta=c=>tipoConta(c)==='investimento'?ivNum(c.saldo)+valorInvConta(c.nome):ivNum(c.saldo);
+        const valorTipoConta=t=>t==='dinheiro'?ivNum(dados.dinheiroFisico):contasDoTipo(t).reduce((s,c)=>s+valorConta(c),0);
+        const r2=v=>Math.round((Number(v)||0)*100)/100;
+        const abrevMoney=v=>{const a=Math.abs(v),s=v<0?'-':'';return a>=1e6?s+'R$ '+(a/1e6).toFixed(1).replace('.',',')+' mi':a>=1e3?s+'R$ '+(a/1e3).toFixed(1).replace('.',',')+' mil':s+'R$ '+Math.round(a);};
+        const corSinal=v=>v>0?'var(--ok)':v<0?'var(--bad)':'inherit';
+
+        // ---------- quadro de detalhes (clique nos gráficos) e registro de ações ----------
+        const registroQuadros=[], registroGraficos={};
+        function resetRegistros(){registroQuadros.length=0;Object.keys(registroGraficos).forEach(k=>delete registroGraficos[k]);}
+        const regQuadro=fn=>{registroQuadros.push(fn);return `abrirQuadroReg(${registroQuadros.length-1})`;};
+        window.abrirQuadroReg=i=>{const q=registroQuadros[i]&&registroQuadros[i]();if(q)abrirQuadro(q.titulo,q.html);};
+        function abrirQuadro(titulo,html){document.getElementById('quadroTitulo').textContent=titulo;document.getElementById('quadroCorpo').innerHTML=html;openModal('quadroModal');}
+        window.fecharQuadro=()=>closeModal('quadroModal');
+        const navQuadro=(view,param=null)=>esc(`fecharQuadro();selecionarVisao(${JSON.stringify(view)},${JSON.stringify(param)})`);
+        function quadroTabela(itens,vazio='Nenhum lançamento neste recorte.'){
+            return `<div class="ctx-box" style="margin-top:10px"><table><thead><tr><th>Data</th><th>Lançamento</th><th>Valor</th></tr></thead><tbody>${itens.length?itens.map(x=>`<tr${x.nav?` class="clickable-row" onclick="${x.nav}"`:''}><td>${x.data?formatarData(x.data):'—'}</td><td>${esc(x.titulo)}${x.sub?`<small class="subtle-line">${esc(x.sub)}</small>`:''}</td><td style="color:${corSinal(x.sinal)}">${x.sinal>0?'+ ':x.sinal<0?'− ':''}${money(Math.abs(x.valor))}</td></tr>`).join(''):`<tr><td colspan="3" class="ctx-empty">${vazio}</td></tr>`}</tbody></table></div>`;
+        }
+        const itDesp=x=>({data:x.data,titulo:x.titulo,sub:x.categoria,valor:ivNum(x.valor),sinal:-1,nav:navQuadro('detalhe_despesa',x.id)});
+        const itRec=x=>({data:x.data,titulo:x.titulo,sub:x.categoriaRecebimento==='Dinheiro'?'Dinheiro':x.conta,valor:ivNum(x.valor),sinal:1,nav:navQuadro('detalhe_recebimento',x.id)});
+        const itPlan=x=>({data:x.data,titulo:x.descricao,sub:x.status,valor:ivNum(x.valor),sinal:0,nav:navQuadro('detalhe_plan',x.id)});
+        const botaoQuadro=(texto,view,param=null)=>`<div style="margin-top:14px"><button class="btn btn-primary" onclick="${navQuadro(view,param)}">${esc(texto)}</button></div>`;
+
+        // ---------- componentes de gráfico (todos clicáveis) ----------
+        window.cliqueGrafico=(id,si,pi)=>{const g=registroGraficos[id];if(!g||!g.detalhe)return;const q=g.detalhe(si,pi);if(q)abrirQuadro(q.titulo,q.html);};
+        window.cliqueRosca=(id,i)=>{const g=registroGraficos[id];if(!g||!g.detalhe)return;const q=g.detalhe(i);if(q)abrirQuadro(q.titulo,q.html);};
+        function graficoLinhas(id,{labels,series,detalhe,titulo='',nota='',altura=250}){
+            registroGraficos[id]={labels,series,detalhe};
+            const W=900,H=altura,L=86,R=20,T=16,B=36, vals=series.flatMap(s=>s.valores);
+            let max=Math.max(0,...vals), min=Math.min(0,...vals); if(max===min) max=min+1;
+            const amp=max-min, x=i=>labels.length===1?(L+W-R)/2:L+i*(W-L-R)/(labels.length-1), y=v=>T+(max-v)/amp*(H-T-B);
+            let grid='';for(let i=0;i<=4;i++){const v=max-i*amp/4,yy=T+i*(H-T-B)/4;grid+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="var(--line)"/><text x="${L-6}" y="${yy+4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(abrevMoney(v))}</text>`;}
+            const step=Math.max(1,Math.ceil(labels.length/12));
+            const eixo=labels.map((l,i)=>i%step===0||i===labels.length-1?`<text x="${x(i)}" y="${H-12}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(l)}</text>`:'').join('');
+            const linhas=series.map(s=>`<polyline points="${s.valores.map((v,i)=>`${x(i)},${y(v)}`).join(' ')}" fill="none" stroke="${s.cor}" stroke-width="${s.largura||2.5}"${s.tracejado?' stroke-dasharray="6 4"':''} stroke-linejoin="round"/>`).join('');
+            const pontos=series.map((s,si)=>s.valores.map((v,i)=>`<g class="pt-grafico" role="button" tabindex="0" onclick="cliqueGrafico('${id}',${si},${i})" onkeydown="if(event.key==='Enter')this.dispatchEvent(new MouseEvent('click'))"><circle cx="${x(i)}" cy="${y(v)}" r="11" fill="transparent"/><circle cx="${x(i)}" cy="${y(v)}" r="4.5" fill="${s.cor}" stroke="var(--surface)" stroke-width="1.5"><title>${esc(s.nome)} — ${esc(labels[i])}: ${esc(money(v))}</title></circle></g>`).join('')).join('');
+            const legenda=`<div class="chart-legend">${series.map(s=>`<span><i class="legend-dot" style="background:${s.cor}"></i> ${esc(s.nome)}</span>`).join('')}</div>`;
+            return `<div class="ctx-box metric-chart chart-box">${titulo?`<h3>${esc(titulo)}</h3>`:''}${nota?`<p class="period-note">${nota}</p>`:''}<svg viewBox="0 0 ${W} ${H}" class="svg-grafico" role="img" aria-label="${esc(titulo)}">${grid}${eixo}${linhas}${pontos}</svg>${legenda}</div>`;
+        }
+        function graficoColunas(id,{labels,series,detalhe,titulo='',nota='',altura=230}){
+            registroGraficos[id]={labels,series,detalhe};
+            const W=900,H=altura,L=86,R=20,T=16,B=36,n=labels.length,ns=series.length;
+            const max=Math.max(1,...series.flatMap(s=>s.valores.map(v=>Math.abs(v))));
+            const gw=(W-L-R)/n,bw=Math.min(34,gw*.78/ns),y=v=>H-B-Math.abs(v)/max*(H-T-B);
+            let grid='';for(let i=0;i<=4;i++){const v=max-i*max/4,yy=T+i*(H-T-B)/4;grid+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="var(--line)"/><text x="${L-6}" y="${yy+4}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(abrevMoney(v))}</text>`;}
+            const step=Math.max(1,Math.ceil(n/12));
+            const eixo=labels.map((l,i)=>i%step===0||i===n-1?`<text x="${L+i*gw+gw/2}" y="${H-12}" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(l)}</text>`:'').join('');
+            const barras=labels.map((l,i)=>series.map((s,si)=>{const v=s.valores[i]||0,x0=L+i*gw+(gw-bw*ns)/2+si*bw,h=Math.max(1,H-B-y(v));return `<rect x="${x0}" y="${y(v)}" width="${bw-2}" height="${h}" rx="3" fill="${s.cor}" style="cursor:pointer" role="button" tabindex="0" onclick="cliqueGrafico('${id}',${si},${i})" onkeydown="if(event.key==='Enter')this.dispatchEvent(new MouseEvent('click'))"><title>${esc(s.nome)} — ${esc(l)}: ${esc(money(v))}</title></rect>`;}).join('')).join('');
+            const legenda=`<div class="chart-legend">${series.map(s=>`<span><i class="legend-dot" style="background:${s.cor}"></i> ${esc(s.nome)}</span>`).join('')}</div>`;
+            return `<div class="ctx-box metric-chart chart-box">${titulo?`<h3>${esc(titulo)}</h3>`:''}${nota?`<p class="period-note">${nota}</p>`:''}<svg viewBox="0 0 ${W} ${H}" class="svg-grafico" role="img" aria-label="${esc(titulo)}">${grid}${eixo}${barras}</svg>${legenda}</div>`;
+        }
+        function graficoRosca(id,{itens,detalhe,titulo='',nota='',centro=''}){
+            registroGraficos[id]={itens,detalhe};
+            const total=itens.reduce((s,x)=>s+Math.max(0,x.valor),0), R=88,r=54,cx=100,cy=100;
+            let ang=-Math.PI/2;
+            const arcos=total<=0?`<circle cx="${cx}" cy="${cy}" r="${(R+r)/2}" fill="none" stroke="var(--line)" stroke-width="${R-r}"/>`:itens.map((it,i)=>{
+                if(it.valor<=0) return '';
+                const frac=it.valor/total, a0=ang, a1=ang+frac*2*Math.PI; ang=a1;
+                const tip=`<title>${esc(it.nome)}: ${esc(money(it.valor))} (${(frac*100).toFixed(1)}%)</title>`;
+                if(frac>=.9999) return `<circle cx="${cx}" cy="${cy}" r="${(R+r)/2}" fill="none" stroke="${it.cor}" stroke-width="${R-r}" style="cursor:pointer" role="button" onclick="cliqueRosca('${id}',${i})">${tip}</circle>`;
+                const p=(rad,a)=>[cx+rad*Math.cos(a),cy+rad*Math.sin(a)], [x0,y0]=p(R,a0),[x1,y1]=p(R,a1),[x2,y2]=p(r,a1),[x3,y3]=p(r,a0), lg=frac>.5?1:0;
+                return `<path d="M${x0},${y0} A${R},${R} 0 ${lg} 1 ${x1},${y1} L${x2},${y2} A${r},${r} 0 ${lg} 0 ${x3},${y3} Z" fill="${it.cor}" style="cursor:pointer" role="button" tabindex="0" onclick="cliqueRosca('${id}',${i})" onkeydown="if(event.key==='Enter')this.dispatchEvent(new MouseEvent('click'))">${tip}</path>`;
+            }).join('');
+            const leg=itens.map((it,i)=>`<div class="clickable-legend" role="button" tabindex="0" onclick="cliqueRosca('${id}',${i})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"><i style="color:${it.cor};font-size:1.3em">●</i> ${esc(it.nome)}: <strong>${money(it.valor)}</strong> <span style="color:var(--muted)">(${total>0?(it.valor/total*100).toFixed(1):'0,0'}%)</span></div>`).join('');
+            return `<div class="ctx-box chart-box">${titulo?`<h3>${esc(titulo)}</h3>`:''}${nota?`<p class="period-note">${nota}</p>`:''}<div class="rosca-wrap"><svg viewBox="0 0 200 200" class="svg-rosca" role="img" aria-label="${esc(titulo)}">${arcos}<text x="100" y="97" text-anchor="middle" font-size="11" fill="var(--muted)">${esc(centro||'TOTAL')}</text><text x="100" y="115" text-anchor="middle" font-size="13" font-weight="700" fill="var(--text-main)">${esc(abrevMoney(total))}</text></svg><div class="rosca-leg">${leg||'<span class="ctx-empty">Sem dados.</span>'}</div></div></div>`;
+        }
+
+        // ---------- meses, lançamentos e séries das contas ----------
+        const INICIO_CONTAS='2026-02';
+        function mesesContas(){
+            const hoje=today(),[ay,am]=hoje.slice(0,7).split('-').map(Number),[iy,im]=INICIO_CONTAS.split('-').map(Number),out=[];
+            for(let y=iy,m=im;y<ay||(y===ay&&m<=am);){
+                let fim=`${y}-${String(m).padStart(2,'0')}-${String(new Date(y,m,0).getDate()).padStart(2,'0')}`; if(fim>hoje)fim=hoje;
+                out.push({ym:`${y}-${String(m).padStart(2,'0')}`,label:`${M_SHORT[m-1]}/${String(y).slice(-2)}`,fim});
+                if(++m>12){m=1;y++;}
+            }
+            return out.length?out:[{ym:hoje.slice(0,7),label:`${M_SHORT[Number(hoje.slice(5,7))-1]}/${hoje.slice(2,4)}`,fim:hoje}];
+        }
+        const chaveTransf=nome=>nome==='Dinheiro'?'fisico':'c:'+nome;
+        const MOV_ENTRADA=['saldo_inicial','deposito','aporte'], MOV_SAIDA=['saque','resgate'];
+        const MOV_NOME={saldo_inicial:'Saldo inicial',deposito:'Depósito',aporte:'Aporte',rendimento:'Rendimento',saque:'Saque',resgate:'Resgate'};
+        function itensConta(nome){
+            const din=nome==='Dinheiro',c=din?null:dados.contas.find(x=>x.nome===nome),tipo=din?'dinheiro':tipoConta(c),itens=[],hoje=today();
+            if(tipo==='poupança'||tipo==='previdência') dados.movContas.filter(m=>m.conta===nome).forEach(m=>{
+                const v=Number(m.valor)||0,ent=MOV_ENTRADA.includes(m.tipo),sai=MOV_SAIDA.includes(m.tipo);
+                itens.push({data:m.data,titulo:MOV_NOME[m.tipo]||m.tipo,sub:m.nota,valor:Math.abs(v),sinal:ent?1:sai?-1:(v>=0?1:-1),cat:ent?'entrada':sai?'saida':'rendimento',movId:m.id});
+            });
+            if(tipo==='investimento') invDaConta(nome).forEach(i=>i.movimentos.forEach(m=>{
+                const ent=['aporte','compra'].includes(m.tipo),sai=['resgate','venda'].includes(m.tipo);
+                itens.push({data:m.data,titulo:i.nome,sub:invMovNome(m.tipo),valor:ivNum(m.valor),sinal:ent?1:sai?-1:1,cat:ent?'entrada':sai?'saida':'rendimento',nav:navQuadro('detalhe_investimento',i.id)});
+            }));
+            if(tipo==='corrente'||tipo==='dinheiro'){
+                dados.recebimentos.filter(r=>r.status!=='Cancelado'&&(din?r.categoriaRecebimento==='Dinheiro':r.conta===nome)).forEach(r=>itens.push({...itRec(r),cat:'entrada'}));
+                dados.despesas.filter(d=>d.status!=='Cancelado'&&d.origem===(din?'dinheiro':'conta_'+nome)).forEach(d=>itens.push({...itDesp(d),cat:'saida'}));
+            }
+            const ch=chaveTransf(nome),nomes=Object.fromEntries(contasTransferencia().map(x=>[x.chave,x.nome]));
+            dados.transferencias.filter(t=>t.origem===ch||t.destino===ch).forEach(t=>{const saida=t.origem===ch;itens.push({data:t.data,titulo:'Transferência '+(saida?'para ':'de ')+String(nomes[saida?t.destino:t.origem]||'—').replace(/^[^\wÀ-ú]+/,''),valor:ivNum(t.valor),sinal:saida?-1:1,cat:saida?'saida':'entrada',transf:true});});
+            return itens.filter(x=>x.data&&x.data<=hoje).sort((a,b)=>a.data.localeCompare(b.data));
+        }
+        function patrimonioInvEm(nome,fim){
+            return invDaConta(nome).reduce((s,i)=>s+(fim>=today()?invAnalise(i).valor:i.classe==='fixa'?aplicarFluxosFixos(i,fim).saldo:invAnalise({...i,movimentos:i.movimentos.filter(x=>x.data<=fim)}).valor),0);
+        }
+        function serieConta(nome){
+            const meses=mesesContas(),din=nome==='Dinheiro',c=din?null:dados.contas.find(x=>x.nome===nome),tipo=din?'dinheiro':tipoConta(c);
+            const itens=itensConta(nome).filter(x=>!(tipo==='investimento'&&x.transf));
+            const doMes=(m,cat)=>itens.filter(x=>ivMes(x.data)===m.ym&&x.cat===cat);
+            const ent=meses.map(m=>r2(sum(doMes(m,'entrada')))),sai=meses.map(m=>r2(sum(doMes(m,'saida')))),ren=meses.map(m=>r2(doMes(m,'rendimento').reduce((t,x)=>t+x.sinal*x.valor,0)));
+            const ate=fim=>itens.filter(x=>x.data<=fim), capitalAte=fim=>r2(ate(fim).reduce((t,x)=>t+(x.cat==='entrada'?x.valor:x.cat==='saida'?-x.valor:0),0));
+            let saldo,capital;
+            if(tipo==='investimento'){saldo=meses.map(m=>r2(patrimonioInvEm(nome,m.fim)));capital=meses.map(m=>capitalAte(m.fim));}
+            else if(tipo==='poupança'||tipo==='previdência'){saldo=meses.map(m=>r2(ate(m.fim).reduce((t,x)=>t+(x.cat==='rendimento'?x.sinal*x.valor:x.cat==='entrada'?x.valor:-x.valor),0)));capital=meses.map(m=>capitalAte(m.fim));}
+            else{ // corrente/dinheiro: o saldo cadastrado só é alterado por transferências
+                const atual=din?ivNum(dados.dinheiroFisico):ivNum(c?.saldo);
+                const liqTr=meses.map(m=>itens.filter(x=>x.transf&&ivMes(x.data)===m.ym).reduce((t,x)=>t+x.sinal*x.valor,0));
+                saldo=meses.map((m,i)=>r2(atual-liqTr.slice(i+1).reduce((t,v)=>t+v,0)));capital=meses.map(()=>0);
+            }
+            return {nome,tipo,meses,ent,sai,ren,saldo,capital};
+        }
+        function agregarSeries(nomes){
+            const ss=nomes.map(serieConta);if(!ss.length)return null;
+            const soma=k=>ss[0].meses.map((_,i)=>r2(ss.reduce((t,s)=>t+(s[k][i]||0),0)));
+            return {meses:ss[0].meses,ss,ent:soma('ent'),sai:soma('sai'),ren:soma('ren'),saldo:soma('saldo'),capital:soma('capital')};
+        }
+        function desempenho(ag){const n=ag.saldo.length-1,atual=ag.saldo[n]||0,capital=ag.capital[n]||0,resultado=atual-capital;return {atual,capital,resultado,rent:capital>0?resultado/capital*100:0,proventos:ag.ren.reduce((t,v)=>t+v,0)};}
+        const rentTxt=v=>`<strong style="color:${corSinal(v)}">${v>0?'+':''}${ivPct(v)}</strong>`;
+
+        // ---------- quadros de detalhe dos gráficos de contas ----------
+        function quadroContaMes(nome,pi,s){
+            const m=s.meses[pi],itens=itensConta(nome).filter(x=>ivMes(x.data)===m.ym),invest=s.tipo==='investimento',cap=['poupança','previdência','investimento'].includes(s.tipo);
+            return {titulo:`${nome} — ${m.label}`,html:`<div class="ctx-kpis">${kpi(invest?'Patrimônio no fim do mês':'Saldo no fim do mês',money(s.saldo[pi]))}${kpi(invest?'Aportes e compras':'Entradas',money(s.ent[pi]))}${kpi(invest?'Resgates e vendas':'Saídas',money(s.sai[pi]))}${kpi(cap?(invest?'Proventos':'Rendimento'):'Resultado do mês',money(cap?s.ren[pi]:s.ent[pi]-s.sai[pi]))}</div>${quadroTabela(itens,'Nenhum lançamento neste mês.')}${botaoQuadro('Abrir conta →','detalhe_conta',nome)}`};
+        }
+        function quadroTotalMes(nomes,ss,pi,titulo='Total'){
+            const m=ss[0].meses[pi];
+            return {titulo:`${titulo} — ${m.label}`,html:`<div class="ctx-box" style="margin-top:6px"><table><thead><tr><th>Conta</th><th>Saldo / patrimônio</th><th>Entradas</th><th>Saídas</th></tr></thead><tbody>${ss.map((s,i)=>`<tr class="clickable-row" onclick="${navQuadro('detalhe_conta',nomes[i])}"><td><strong>${esc(nomes[i])}</strong></td><td>${money(s.saldo[pi])}</td><td style="color:var(--ok)">${money(s.ent[pi])}</td><td style="color:var(--bad)">${money(s.sai[pi])}</td></tr>`).join('')}</tbody><tfoot><tr><th>Total</th><th>${money(ss.reduce((t,s)=>t+s.saldo[pi],0))}</th><th>${money(ss.reduce((t,s)=>t+s.ent[pi],0))}</th><th>${money(ss.reduce((t,s)=>t+s.sai[pi],0))}</th></tr></tfoot></table></div>`};
+        }
+        function graficoEvolucaoContas(id,nomes,titulo,comTotal=false,nota=''){
+            const ss=nomes.map(serieConta);if(!ss.length)return '';
+            const meses=ss[0].meses,series=ss.map((s,i)=>({nome:nomes[i],valores:s.saldo,cor:CORES_LINHAS[i%CORES_LINHAS.length]}));
+            if(comTotal&&ss.length>1) series.push({nome:'Total',valores:meses.map((_,i)=>r2(ss.reduce((t,s)=>t+s.saldo[i],0))),cor:'#a0aec0',tracejado:true,largura:2});
+            return graficoLinhas(id,{titulo,labels:meses.map(m=>m.label),series,nota:(nota?nota+' ':'')+'Clique em um ponto para ver os lançamentos do mês.',detalhe:(si,pi)=>si<nomes.length?quadroContaMes(nomes[si],pi,ss[si]):quadroTotalMes(nomes,ss,pi)});
+        }
+        function graficoFluxoContas(id,nomes,titulo,rotEnt='Entradas',rotSai='Saídas'){
+            const ag=agregarSeries(nomes);if(!ag)return '';
+            const series=[{nome:rotEnt,valores:ag.ent,cor:'#22a06b'},{nome:rotSai,valores:ag.sai,cor:'#e25555'}];
+            return graficoColunas(id,{titulo,labels:ag.meses.map(m=>m.label),series,nota:'Clique em uma barra para ver os lançamentos do mês.',detalhe:(si,pi)=>nomes.length===1?quadroContaMes(nomes[0],pi,ag.ss[0]):quadroTotalMes(nomes,ag.ss,pi)});
+        }
+        function itensInvestimentoQuadro(lista){
+            return `<div class="ctx-box" style="margin-top:10px"><table><thead><tr><th>Ativo</th><th>Conta</th><th>Valor atual</th></tr></thead><tbody>${lista.length?lista.map(i=>`<tr class="clickable-row" onclick="${navQuadro('detalhe_investimento',i.id)}"><td><strong>${esc(i.nome)}</strong><small class="subtle-line">${esc(i.tipo)}</small></td><td>${esc(i.contaInv||'—')}</td><td>${money(invAnalise(i).valor)}</td></tr>`).join(''):'<tr><td colspan="3" class="ctx-empty">Nenhuma aplicação.</td></tr>'}</tbody></table></div>`;
+        }
+        function roscasInvestimentoContas(id,nomes){
+            const invs=nomes.flatMap(invDaConta),porClasse=[['Renda Fixa','fixa','#667eea'],['Renda Variável','variavel','#38b2ac']].map(([n,k,cor])=>({nome:n,cor,valor:r2(invs.filter(i=>i.classe===k).reduce((s,i)=>s+invAnalise(i).valor,0)),lista:invs.filter(i=>i.classe===k)}));
+            const tipos=[...new Set(invs.map(i=>i.tipo))].sort(ordemAlfa),porTipo=tipos.map((t,k)=>({nome:t,cor:CORES_LINHAS[k%CORES_LINHAS.length],lista:invs.filter(i=>i.tipo===t),valor:r2(invs.filter(i=>i.tipo===t).reduce((s,i)=>s+invAnalise(i).valor,0))}));
+            const det=arr=>i=>({titulo:arr[i].nome,html:`<div class="ctx-kpis">${kpi('Valor atual',money(arr[i].valor))}${kpi('Aplicações',arr[i].lista.length)}</div>${itensInvestimentoQuadro(arr[i].lista)}`});
+            return `<div class="ctx-grid">${graficoRosca(id+'Classe',{titulo:'Composição por classe',itens:porClasse,detalhe:det(porClasse),centro:'INVESTIDO'})}${graficoRosca(id+'Tipo',{titulo:'Composição por tipo',itens:porTipo,detalhe:det(porTipo),centro:'INVESTIDO'})}</div>`;
+        }
+        function roscaContasPorValor(id,nomes,ss){
+            const itens=nomes.map((n,i)=>({nome:n,valor:Math.max(0,ss[i].saldo[ss[i].saldo.length-1]||0),cor:CORES_LINHAS[i%CORES_LINHAS.length]}));
+            return graficoRosca(id,{titulo:'Distribuição por conta',itens,centro:'SALDO',detalhe:i=>({titulo:itens[i].nome,html:`<div class="ctx-kpis">${kpi('Valor atual',money(itens[i].valor))}</div>${botaoQuadro('Abrir conta →','detalhe_conta',itens[i].nome)}`})});
+        }
+        function roscaSaidasCategoria(id,nomes){
+            const din=nomes.length===1&&nomes[0]==='Dinheiro',origens=nomes.map(n=>n==='Dinheiro'?'dinheiro':'conta_'+n);
+            const desp=dados.despesas.filter(x=>origens.includes(x.origem)&&x.status!=='Cancelado'&&emPeriodo(x)),cats=agrupar(desp,'categoria').sort((a,b)=>b[1]-a[1]);
+            const itens=cats.map(([n,v])=>({nome:n,valor:r2(v),cor:getCatDetails(n).cor}));
+            return graficoRosca(id,{titulo:'Saídas por categoria no período',itens,centro:'SAÍDAS',nota:din?'Despesas pagas em dinheiro.':'Despesas lançadas nesta seleção de contas.',detalhe:i=>({titulo:`Saídas — ${itens[i].nome}`,html:`<div class="ctx-kpis">${kpi('Total',money(itens[i].valor))}</div>${quadroTabela(desp.filter(x=>(x.categoria||'Outros')===itens[i].nome).map(itDesp))}`})});
+        }
+        function roscaCapitalRendimento(id,ag){
+            const d=desempenho(ag),itens=[{nome:'Capital aportado (líquido)',valor:r2(Math.max(0,d.capital)),cor:'#667eea'},{nome:'Rendimento acumulado',valor:r2(Math.max(0,d.resultado)),cor:'#48bb78'}];
+            return graficoRosca(id,{titulo:'Composição do saldo',itens,centro:'SALDO',detalhe:i=>({titulo:itens[i].nome,html:`<div class="ctx-kpis">${kpi(itens[i].nome,money(itens[i].valor))}${kpi('Rentabilidade acumulada',ivPct(d.rent))}</div><p class="period-note">${i===0?'Soma dos depósitos/aportes menos saques/resgates.':'Diferença entre o saldo atual e o capital aportado.'}</p>`})});
+        }
+
+        // ---------- cards e menus ----------
+        function cardTipoConta(t){
+            const info=TIPOS_CONTA[t],n=t==='dinheiro'?1:contasDoTipo(t).length,fora=t==='investimento'||t==='previdência';
+            const sub=t==='dinheiro'?'Dinheiro físico · compõe o saldo líquido':`${n} ${n===1?'conta':'contas'} · ${fora?'fora do saldo líquido':'compõe o saldo atual em contas'}`;
+            return `<div class="ctx-kpi kpi-action" role="button" tabindex="0" onclick="${esc(`selecionarVisao('contas_tipo',${JSON.stringify(t)})`)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"><small>${info.icone} ${info.nome}</small><strong>${money(valorTipoConta(t))}</strong><small style="margin-top:6px;font-weight:400">${sub}</small></div>`;
+        }
+        function linhaMenu(ico,titulo,sub,view){
+            return `<div class="menu-linha" role="button" tabindex="0" onclick="${esc(`selecionarVisao(${JSON.stringify(view)})`)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"><span class="ml-ico">${ico}</span><span class="ml-txt"><strong>${esc(titulo)}</strong><small>${sub}</small></span><span class="ml-seta">›</span></div>`;
+        }
+        function renderContasMenu(){
+            header('🏦 Contas e Transferências',null,'PAINEL DE DADOS');
+            const tr=dados.transferencias,trPeriodo=tr.filter(emPeriodo);
+            document.getElementById('contextContent').innerHTML=`<p class="period-note">Escolha uma área para continuar.</p>`+
+                linhaMenu('🏦','Contas',`${dados.contas.length} ${dados.contas.length===1?'conta cadastrada':'contas cadastradas'} + dinheiro · saldo atual em contas ${money(saldoContasDisponiveis())}`,'contas_lista')+
+                linhaMenu('🔄','Transferências',`${tr.length} ${tr.length===1?'registro':'registros'} · ${money(sum(trPeriodo))} transferidos no período`,'transferencias');
+        }
+        function renderCartoesMenu(){
+            header('💳 Cartões e Parcelamentos',null,'PAINEL DE DADOS');
+            const grupos=[...gruposParcelas()].filter(([id,itens])=>itens.some(emPeriodo));
+            document.getElementById('contextContent').innerHTML=`<p class="period-note">Escolha uma área para continuar.</p>`+
+                linhaMenu('💳','Cartões',`${dados.cartoes.length} ${dados.cartoes.length===1?'cartão':'cartões'} · limite total ${money(sum(dados.cartoes,'limite'))} · faturas do mês ${money(totalFaturasMes())}`,'cartoes_lista')+
+                linhaMenu('⏳','Parcelamentos',`${grupos.length} no período · ${money(sum(dados.despesas.filter(x=>x.parcelas>1&&emPeriodo(x))))} em parcelas do período`,'parcelamentos');
+        }
+
+        // ---------- Contas (primeiro nível) ----------
+        function renderContasLista(){
+            header('🏦 Contas',{text:'+ Transferir',fn:()=>abrirTransferencia()},'CONTAS E TRANSFERÊNCIAS',{text:'+ Nova Conta',fn:()=>abrirModalConta()});
+            const ent=sum(dados.recebimentos.filter(x=>emPeriodo(x)&&x.status!=='Cancelado')),sai=sum(dados.despesas.filter(x=>(x.origem||'').startsWith('conta_')&&emPeriodo(x)));
+            const patrimonio=dados.contas.reduce((s,c)=>s+valorConta(c),0)+ivNum(dados.dinheiroFisico);
+            const kpis=`<div class="ctx-kpis">${kpi('Saldo atual em contas',money(saldoContasDisponiveis()))}${kpi('Entradas do período',money(ent))}${kpi('Saídas em contas no período',money(sai))}${kpi('Patrimônio total (contas + dinheiro)',money(patrimonio))}</div>`;
+            const barras=graficoBarras('Saldos atuais por conta',dados.contas.map(c=>[c.nome,valorConta(c)]),n=>`selecionarVisao('detalhe_conta',${JSON.stringify(n)})`);
+            const cards=`<h3 class="section-heading">Composição por tipo de conta</h3><p class="period-note">Clique em um card para ver as contas de cada tipo, com gráficos, desempenho e detalhes. Contas de investimento e previdência não entram no saldo atual em contas nem na Composição do Saldo Líquido.</p><div class="ctx-kpis kpis-auto">${['corrente','poupança','investimento','previdência','dinheiro'].map(cardTipoConta).join('')}</div>`;
+            const geral=graficoEvolucaoContas('contasGeral',[...dados.contas.map(c=>c.nome),'Dinheiro'],'📈 Evolução de todas as contas juntas',true,'Contas correntes e dinheiro mostram o saldo cadastrado (alterado apenas por transferências); poupança, previdência e investimento mostram a evolução dos lançamentos desde fev/2026.');
+            document.getElementById('contextContent').innerHTML=barras+kpis+cards+geral;
+        }
+
+        // ---------- Contas por tipo (drill down) ----------
+        function renderContasTipo(tipo){
+            const info=TIPOS_CONTA[tipo];if(!info)return navegarVoltar();
+            const din=tipo==='dinheiro',nomes=din?['Dinheiro']:contasDoTipo(tipo).map(c=>c.nome);
+            header(info.icone+' '+info.nome,din?{text:'+ Transferir',fn:()=>abrirTransferencia()}:{text:'+ Nova Conta',fn:()=>abrirModalConta(tipo)},'CONTAS E TRANSFERÊNCIAS',din?null:{text:'+ Transferir',fn:()=>abrirTransferencia()});
+            const alvo=document.getElementById('contextContent');
+            if(!nomes.length){alvo.innerHTML=`<div class="ctx-kpis">${kpi('Valor total',money(0))}${kpi('Contas cadastradas',0)}</div><p class="ctx-empty">Nenhuma ${esc(info.nome.toLowerCase())} cadastrada. Use <strong>+ Nova Conta</strong> para criar.</p>`;return;}
+            const ag=agregarSeries(nomes),d=desempenho(ag),cap=['poupança','previdência','investimento'].includes(tipo);
+            const origens=nomes.map(n=>n==='Dinheiro'?'dinheiro':'conta_'+n);
+            const entP=sum(dados.recebimentos.filter(x=>emPeriodo(x)&&x.status!=='Cancelado'&&(din?x.categoriaRecebimento==='Dinheiro':nomes.includes(x.conta)))),saiP=sum(dados.despesas.filter(x=>emPeriodo(x)&&x.status!=='Cancelado'&&origens.includes(x.origem)));
+            let kpis;
+            if(tipo==='corrente') kpis=[kpi('Saldo atual',money(valorTipoConta(tipo))),kpi('Contas',nomes.length),kpi('Entradas no período',money(entP)),kpi('Saídas no período',money(saiP))];
+            else if(din) kpis=[kpi('Saldo atual',money(ivNum(dados.dinheiroFisico))),kpi('Entradas no período',money(entP)),kpi('Saídas no período',money(saiP)),kpi('Transferências no período',dados.transferencias.filter(t=>emPeriodo(t)&&(t.origem==='fisico'||t.destino==='fisico')).length)];
+            else if(tipo==='investimento') kpis=[kpi('Patrimônio investido',money(d.atual)),kpi('Aportes líquidos',money(d.capital)),kpi('Resultado acumulado',`<span style="color:${corSinal(d.resultado)}">${money(d.resultado)}</span>`),kpi('Rentabilidade acumulada',rentTxt(d.rent)),kpi('Proventos recebidos',money(d.proventos)),kpi('Caixa nas contas',money(sum(contasDoTipo(tipo),'saldo')))];
+            else kpis=[kpi('Saldo atual',money(d.atual)),kpi('Capital aportado (líquido)',money(d.capital)),kpi('Rendimento acumulado',`<span style="color:${corSinal(d.resultado)}">${money(d.resultado)}</span>`),kpi('Rentabilidade acumulada',rentTxt(d.rent))];
+            const nota={corrente:'Para contas correntes, o saldo é o valor cadastrado (alterado por transferências); entradas e saídas vêm dos lançamentos de recebimentos e despesas.',poupança:'Saldo, rendimentos e rentabilidade calculados a partir dos lançamentos da conta desde fev/2026.',previdência:'Saldo, aportes e rentabilidade calculados a partir dos lançamentos da conta desde fev/2026. Fora do saldo líquido.',investimento:'Patrimônio calculado a partir das aplicações vinculadas a estas contas. Fora do saldo líquido; resultados são estimativas.',dinheiro:'Dinheiro físico em mãos; compõe o saldo líquido.'}[tipo];
+            const idp='tp'+tipo.replace(/\W/g,'');
+            let graficos=graficoEvolucaoContas(idp+'Ev',nomes,'📈 Evolução por conta',nomes.length>1)+graficoFluxoContas(idp+'Fl',nomes,cap?(tipo==='investimento'?'📊 Aportes × resgates por mês':'📊 Depósitos × saques por mês'):'📊 Entradas × saídas lançadas por mês',tipo==='investimento'?'Aportes e compras':cap?'Entradas':'Entradas',tipo==='investimento'?'Resgates e vendas':'Saídas');
+            if(tipo==='investimento') graficos+=roscasInvestimentoContas(idp+'Cp',nomes);
+            else if(cap) graficos+=`<div class="ctx-grid">${roscaCapitalRendimento(idp+'Cr',ag)}${nomes.length>1?roscaContasPorValor(idp+'Ct',nomes,ag.ss):''}</div>`;
+            else graficos+=`<div class="ctx-grid">${roscaSaidasCategoria(idp+'Sc',nomes)}${nomes.length>1?roscaContasPorValor(idp+'Ct',nomes,ag.ss):''}</div>`;
+            const linhas=nomes.map((n,i)=>{
+                const c=dados.contas.find(x=>x.nome===n),s=ag.ss[i],ult=s.saldo.length-1,res=s.saldo[ult]-s.capital[ult],rent=s.capital[ult]>0?res/s.capital[ult]*100:0;
+                const eP=sum(dados.recebimentos.filter(x=>emPeriodo(x)&&x.status!=='Cancelado'&&(n==='Dinheiro'?x.categoriaRecebimento==='Dinheiro':x.conta===n))),sP=sum(dados.despesas.filter(x=>emPeriodo(x)&&x.status!=='Cancelado'&&x.origem===(n==='Dinheiro'?'dinheiro':'conta_'+n)));
+                const inst=c?[c.banco,c.agencia?'Ag. '+c.agencia:'',c.numero?'Conta '+c.numero:''].filter(Boolean).join(' · ')||'—':'Em mãos';
+                const cel=tipo==='investimento'?`<td>${money(c.saldo)}</td><td>${money(s.saldo[ult])}</td><td>${money(s.capital[ult])}</td><td style="color:${corSinal(res)}">${money(res)}</td><td>${rentTxt(rent)}</td>`:cap?`<td>${money(s.saldo[ult])}</td><td>${money(s.capital[ult])}</td><td style="color:${corSinal(res)}">${money(res)}</td><td>${rentTxt(rent)}</td>`:`<td>${money(s.saldo[ult])}</td><td style="color:var(--ok)">${money(eP)}</td><td style="color:var(--bad)">${money(sP)}</td>`;
+                return `<tr class="clickable-row" onclick="${chamada('detalhe_conta',n)}" title="Abrir conta"><td><strong>${esc(n)}</strong><small class="subtle-line">${esc(inst)}</small></td>${cel}</tr>`;
+            }).join('');
+            const cab=tipo==='investimento'?'<th>Conta</th><th>Caixa</th><th>Patrimônio investido</th><th>Aportes líquidos</th><th>Resultado</th><th>Rentab.</th>':cap?'<th>Conta</th><th>Saldo atual</th><th>Capital líquido</th><th>Rendimento</th><th>Rentab.</th>':'<th>Conta</th><th>Saldo atual</th><th>Entradas (período)</th><th>Saídas (período)</th>';
+            alvo.innerHTML=`<div class="ctx-kpis kpis-auto">${kpis.join('')}</div><p class="period-note">${nota}</p>${graficos}<div class="ctx-box"><h3>${esc(info.nome)} — contas</h3><table><thead><tr>${cab}</tr></thead><tbody>${linhas}</tbody></table></div>`;
+        }
+
+        // ---------- detalhe de uma conta ----------
+        function renderDetalheConta(nome){
+            const din=nome==='Dinheiro',c=din?null:dados.contas.find(x=>x.nome===nome);if(!c&&!din)return navegarVoltar();
+            const tipo=din?'dinheiro':tipoConta(c),info=TIPOS_CONTA[tipo],cap=['poupança','previdência','investimento'].includes(tipo);
+            const acaoPrim=tipo==='poupança'||tipo==='previdência'?{text:'+ Lançamento',fn:()=>abrirMovConta(nome)}:tipo==='investimento'?{text:'+ Novo investimento',fn:()=>abrirInvestimento(null,'fixa','',nome)}:{text:'+ Transferir',fn:()=>abrirTransferencia()};
+            header(info.icone+' '+nome,acaoPrim,'DETALHE DA CONTA — '+info.nome.toUpperCase(),acaoPrim.text==='+ Transferir'?null:{text:'+ Transferir',fn:()=>abrirTransferencia()});
+            const ag=agregarSeries([nome]),s=ag.ss[0],d=desempenho(ag),idp='dc'+nome.replace(/\W/g,'');
+            const inst=c?[c.banco,c.agencia?'Agência '+c.agencia:'',c.numero?'Conta '+c.numero:''].filter(Boolean).join(' · '):'';
+            const dsp=dados.despesas.filter(x=>x.origem===(din?'dinheiro':'conta_'+nome)&&emPeriodo(x)),rcb=dados.recebimentos.filter(x=>(din?x.categoriaRecebimento==='Dinheiro':x.conta===nome)&&emPeriodo(x));
+            let kpis;
+            if(tipo==='investimento') kpis=[kpi('Patrimônio investido',money(d.atual)),kpi('Aportes líquidos',money(d.capital)),kpi('Resultado acumulado',`<span style="color:${corSinal(d.resultado)}">${money(d.resultado)}</span>`),kpi('Rentabilidade acumulada',rentTxt(d.rent)),kpi('Proventos recebidos',money(d.proventos)),kpi('Caixa na conta',money(c.saldo))];
+            else if(cap) kpis=[kpi('Saldo atual',money(d.atual)),kpi('Capital aportado (líquido)',money(d.capital)),kpi('Rendimento acumulado',`<span style="color:${corSinal(d.resultado)}">${money(d.resultado)}</span>`),kpi('Rentabilidade acumulada',rentTxt(d.rent))];
+            else kpis=[kpi('Saldo atual cadastrado',money(din?dados.dinheiroFisico:c.saldo)),kpi('Entradas no período',money(sum(rcb))),kpi('Saídas no período',money(sum(dsp)))];
+            const linhaSaldo=graficoLinhas(idp+'Ev',{titulo:tipo==='investimento'?'📈 Evolução do patrimônio':'📈 Evolução do saldo',labels:s.meses.map(m=>m.label),series:[{nome:tipo==='investimento'?'Patrimônio investido':'Saldo',valores:s.saldo,cor:info.cor},...(cap?[{nome:'Capital aportado (líquido)',valores:s.capital,cor:'#a0aec0',tracejado:true,largura:2}]:[])],nota:'Clique em um ponto para ver os lançamentos do mês.',detalhe:(si,pi)=>quadroContaMes(nome,pi,s)});
+            const fluxo=graficoFluxoContas(idp+'Fl',[nome],cap?'📊 Aportes × saques/resgates por mês':'📊 Entradas × saídas lançadas por mês',tipo==='investimento'?'Aportes e compras':'Entradas',tipo==='investimento'?'Resgates e vendas':'Saídas');
+            let comp='',tabelas='';
+            if(tipo==='investimento'){
+                comp=roscasInvestimentoContas(idp+'Cp',[nome]);
+                tabelas=`<h3 class="section-heading">Aplicações desta conta</h3>${agruparInvPorTipo(invDaConta(nome),'conta-'+nome)}`;
+            }else if(cap){
+                comp=roscaCapitalRendimento(idp+'Cr',ag);
+                const movs=dados.movContas.filter(m=>m.conta===nome).sort((a,b)=>b.data.localeCompare(a.data));
+                tabelas=`<div class="ctx-box"><h3>Lançamentos da conta</h3><table><thead><tr><th>Data</th><th>Tipo</th><th>Valor</th><th>Observação</th><th>Ações</th></tr></thead><tbody>${movs.length?movs.map(m=>{const v=Number(m.valor)||0,sinal=MOV_SAIDA.includes(m.tipo)?-1:MOV_ENTRADA.includes(m.tipo)?1:(v>=0?1:-1);return `<tr><td>${formatarData(m.data)}</td><td>${esc(MOV_NOME[m.tipo]||m.tipo)}</td><td style="color:${corSinal(sinal)}">${sinal>0?'+ ':'− '}${money(Math.abs(v))}</td><td>${esc(m.nota||'')}</td><td class="inv-actions"><button class="inline-edit-button" onclick="excluirMovConta('${m.id}')" title="Excluir lançamento">🗑️</button></td></tr>`;}).join(''):'<tr><td colspan="5" class="ctx-empty">Nenhum lançamento.</td></tr>'}</tbody></table></div>`;
+            }else{
+                comp=roscaSaidasCategoria(idp+'Sc',[nome]);
+                tabelas=graficoBarras('Movimentação no período',[['Entradas',sum(rcb)],['Saídas',sum(dsp)]],n=>regQuadro(()=>({titulo:`${n} — ${nome} (período)`,html:quadroTabela((n==='Entradas'?rcb.map(itRec):dsp.map(itDesp)))})))+tabelaLancamentos(dsp,rcb);
+            }
+            document.getElementById('contextContent').innerHTML=`${inst?`<p class="period-note">${esc(inst)}${c?.notas?' — '+esc(c.notas):''}</p>`:''}<div class="ctx-kpis kpis-auto">${kpis.join('')}</div>${linhaSaldo}${fluxo}${comp}${tabelas}${tabelaTransferenciasConta(nome)}`;
+        }
+
+        // ---------- lançamentos manuais em poupança / previdência ----------
+        const MOV_TIPOS_CONTA={'poupança':[['deposito','Depósito'],['rendimento','Rendimento (aceita valor negativo)'],['saque','Saque']],'previdência':[['aporte','Aporte'],['rendimento','Rendimento (aceita valor negativo)'],['resgate','Resgate']]};
+        window.abrirMovConta=nome=>{
+            const c=dados.contas.find(x=>x.nome===nome);if(!c)return;const t=tipoConta(c);if(!MOV_TIPOS_CONTA[t])return showToast('Lançamentos manuais estão disponíveis em poupança e previdência.',true);
+            document.getElementById('movContaNome').value=nome;document.getElementById('movContaTitulo').textContent='Novo lançamento — '+nome;
+            document.getElementById('movContaTipo').innerHTML=MOV_TIPOS_CONTA[t].map(([v,l])=>`<option value="${v}">${l}</option>`).join('');
+            document.getElementById('movContaData').value=today();document.getElementById('movContaValor').value='';document.getElementById('movContaNota').value='';openModal('movContaModal');
+        };
+        window.salvarMovConta=()=>{
+            const nome=document.getElementById('movContaNome').value,c=dados.contas.find(x=>x.nome===nome);if(!c)return;
+            const tipo=document.getElementById('movContaTipo').value,data=document.getElementById('movContaData').value,valor=r2(document.getElementById('movContaValor').value);
+            if(!data)return showToast('Informe a data.',true);
+            if(tipo==='rendimento'?valor===0:valor<=0)return showToast('Informe um valor válido.',true);
+            const delta=MOV_SAIDA.includes(tipo)?-valor:valor;
+            if(r2(c.saldo+delta)<-0.005)return showToast('Saldo insuficiente na conta.',true);
+            dados.movContas.push({id:uid('mc'),conta:nome,data,tipo,valor,nota:document.getElementById('movContaNota').value.trim()});
+            c.saldo=r2(c.saldo+delta);closeModal('movContaModal');salvarDadosLocal();refresh();showToast('Lançamento registrado; saldo atualizado.');
+        };
+        window.excluirMovConta=id=>{
+            const m=dados.movContas.find(x=>x.id===id);if(!m||!confirm('Excluir este lançamento e desfazer o efeito no saldo?'))return;
+            const c=dados.contas.find(x=>x.nome===m.conta),v=Number(m.valor)||0,delta=MOV_SAIDA.includes(m.tipo)?-v:v;
+            if(c){if(r2(c.saldo-delta)<-0.005)return showToast('Não é possível excluir: o saldo ficaria negativo.',true);c.saldo=r2(c.saldo-delta);}
+            dados.movContas=dados.movContas.filter(x=>x.id!==id);salvarDadosLocal();refresh();showToast('Lançamento excluído.');
+        };
+
+        // ---------- Nova conta (4 tipos) ----------
+        window.abrirModalConta=(tipo='corrente')=>{
+            ['contaNome','contaBanco','contaAgencia','contaNumero','contaNotas'].forEach(i=>document.getElementById(i).value='');
+            document.getElementById('contaTipo').value=TIPOS_CONTA[tipo]&&tipo!=='dinheiro'?tipo:'corrente';document.getElementById('contaSaldo').value='0';document.getElementById('contaDataSaldo').value=today();
+            openModal('contaModal');document.getElementById('contaNome').focus();
+        };
+        window.salvarConta=()=>{
+            const val=i=>document.getElementById(i).value.trim(),nome=val('contaNome'),saldo=r2(document.getElementById('contaSaldo').value),tipo=document.getElementById('contaTipo').value,dataSaldo=val('contaDataSaldo')||today();
+            if(!nome)return showToast('Informe o nome da conta.',true);
+            if(nome.toLowerCase()==='dinheiro')return showToast('"Dinheiro" é reservado para o dinheiro físico. Use outro nome.',true);
+            if(dados.contas.some(c=>c.nome.toLowerCase()===nome.toLowerCase()))return showToast('Já existe uma conta com esse nome.',true);
+            if(!Number.isFinite(saldo))return showToast('Informe um saldo inicial válido.',true);
+            const conta={nome,tipo,saldo};
+            [['banco','contaBanco'],['agencia','contaAgencia'],['numero','contaNumero'],['notas','contaNotas']].forEach(([k,i])=>{if(val(i))conta[k]=val(i);});
+            dados.contas.push(conta);
+            if((tipo==='poupança'||tipo==='previdência')&&saldo!==0) dados.movContas.push({id:uid('mc'),conta:nome,data:dataSaldo,tipo:'saldo_inicial',valor:saldo,nota:'Saldo inicial informado no cadastro'});
+            fecharERecarregar('contaModal','Conta adicionada!','contas_tipo',tipo);
+        };
+        function popularContasInv(atual=''){
+            const sel=document.getElementById('invConta'),lista=contasDoTipo('investimento').map(c=>c.nome);
+            if(atual&&!lista.includes(atual))lista.push(atual);
+            sel.innerHTML='<option value="">— Sem conta definida —</option>'+lista.map(n=>`<option value="${esc(n)}">${esc(n)}</option>`).join('');sel.value=atual||'';
+        }
+        function patrimonioPorContaInv(classe=null){
+            const itens=contasDoTipo('investimento').map(c=>[c.nome,invDaConta(c.nome).filter(i=>!classe||i.classe===classe).reduce((s,i)=>s+invAnalise(i).valor,0)]);
+            const sem=dados.investimentos.filter(i=>!i.contaInv&&(!classe||i.classe===classe)).reduce((s,i)=>s+invAnalise(i).valor,0);
+            if(sem>0)itens.push(['Sem conta definida',sem]);
+            return itens.filter(x=>x[1]>0);
+        }
+        const acaoContaInv=n=>n==='Sem conta definida'?`selecionarVisao('investimentos_lista')`:`selecionarVisao('detalhe_conta',${JSON.stringify(n)})`;
+
+        // ---------- evolução financeira histórica: clique nos pontos ----------
+        window.cliqueEvolucao=(si,pi)=>{
+            const e=window.__evo;if(!e)return;const m=e.meses[pi];
+            const itens=[...m.rec.map(itRec),...m.des.map(itDesp)].sort((a,b)=>a.data.localeCompare(b.data));
+            const acumulado=e.meses.slice(0,pi+1).reduce((t,x)=>t+sum(x.rec)-sum(x.des),0);
+            abrirQuadro('Evolução financeira — '+m.label,`<div class="ctx-kpis">${kpi('Entradas',money(sum(m.rec)))}${kpi('Saídas',money(sum(m.des)))}${kpi('Resultado do mês',money(sum(m.rec)-sum(m.des)))}${kpi('Saldo acumulado no período',money(acumulado))}</div>${quadroTabela(itens)}`);
+        };
+
+        // ---------- dados de demonstração: contas, lançamentos e vínculo com investimentos ----------
+        let contadorDemoV18=0;
+        function adicionarDemonstracaoContasV18(){
+            garantirModulos();
+            if(dados.zerado||dados.demoContasV18)return;
+            const hoje=today(),iso=(y,m,d)=>`${y}-${String(m).padStart(2,'0')}-${String(Math.min(d,new Date(y,m,0).getDate())).padStart(2,'0')}`;
+            const meses=[];for(let y=2026,m=2;iso(y,m,1)<=hoje;){meses.push([y,m]);if(++m>12){m=1;y++;}}
+            const XP='XP Investimentos',INTER='Inter Invest',RICO='Rico Investimentos';
+            const novasContas=[
+                {nome:XP,tipo:'investimento',banco:'XP Investimentos (demo)',agencia:'0001',numero:'INV-10231',saldo:1250},
+                {nome:INTER,tipo:'investimento',banco:'Banco Inter — Invest (demo)',agencia:'0001',numero:'INV-55871',saldo:680.4},
+                {nome:RICO,tipo:'investimento',banco:'Rico Investimentos (demo)',agencia:'0001',numero:'INV-77412',saldo:320},
+                {nome:'Poupança Caixa',tipo:'poupança',banco:'Caixa Econômica Federal (demo)',agencia:'0114',numero:'00012345-6',saldo:0},
+                {nome:'Poupança BB',tipo:'poupança',banco:'Banco do Brasil (demo)',agencia:'3045-1',numero:'98765-4',saldo:0},
+                {nome:'Previdência Brasilprev',tipo:'previdência',banco:'Brasilprev (demo)',agencia:'—',numero:'PGBL-2026-77',saldo:0,notas:'PGBL fictício para demonstração.'}
+            ];
+            novasContas.forEach(c=>{if(!dados.contas.some(x=>x.nome===c.nome))dados.contas.push({...c,exemplo:true});});
+            const gerar=(conta,cfg)=>{
+                let saldo=0;
+                const push=(data,tipo,valor,nota)=>{if(data>hoje)return;dados.movContas.push({id:'demo_mc18_'+(++contadorDemoV18),conta,data,tipo,valor:r2(valor),nota,demo:true});saldo+=MOV_SAIDA.includes(tipo)?-valor:valor;};
+                push(cfg.inicialData,'saldo_inicial',cfg.inicial,'Saldo de abertura (demonstração)');
+                meses.forEach(([y,m],k)=>{
+                    const ev=[[iso(y,m,cfg.depDia),cfg.tipoDep,cfg.dep(k),'Depósito mensal (demonstração)']];
+                    (cfg.extras?.[k]||[]).forEach(e=>ev.push([iso(y,m,e[0]),e[1],e[2],e[3]]));
+                    ev.sort((a,b)=>a[0].localeCompare(b[0])).forEach(e=>push(...e));
+                    const fimMes=iso(y,m,31);if(fimMes<=hoje)push(fimMes,'rendimento',saldo*cfg.taxa(k)/100,'Rendimento do mês (demonstração)');
+                });
+                const c=dados.contas.find(x=>x.nome===conta);if(c)c.saldo=r2(saldo);
+            };
+            if(!dados.movContas.some(m=>m.demo)){
+                gerar('Poupança Caixa',{inicial:3500,inicialData:'2026-02-02',tipoDep:'deposito',depDia:5,dep:k=>700+50*(k%3),taxa:()=>0.55});
+                gerar('Poupança BB',{inicial:1200,inicialData:'2026-02-03',tipoDep:'deposito',depDia:8,dep:k=>400+25*(k%4),taxa:()=>0.52,extras:{4:[[18,'saque',600,'Saque — reforma (demonstração)']],6:[[12,'saque',350,'Saque — imprevisto (demonstração)']]}});
+                gerar('Previdência Brasilprev',{inicial:8000,inicialData:'2026-02-01',tipoDep:'aporte',depDia:10,dep:k=>900+(k>=5?100:0),taxa:k=>[0.62,0.85,-0.35,0.95,0.7,1.1,0.55,0.8,0.6][k]??0.7,extras:{5:[[20,'aporte',2000,'Aporte extra — bônus (demonstração)']]}});
+            }
+            // 1) vincula os investimentos já existentes às três contas de investimento
+            const atrib={[XP]:['TESOURO-SELIC-2029','CDB-CDI-DEMO','LCI-CDI-DEMO','DEB-IPCA-DEMO','PETR4','ITUB4','HGLG11','BOVA11','AAPL34','BTC'],[INTER]:['POUP-BB-DEMO','TESOURO-IPCA-2035','CDB-PRE-DEMO','LCA-CDI-DEMO','VALE3','MXRF11','XPML11','IVVB11','MSFT34'],[RICO]:['POUP-CAIXA-DEMO','LCI-PRE-DEMO','LCA-PRE-DEMO','DEB-PRE-DEMO','BBAS3','KNCR11','ETH']};
+            Object.entries(atrib).forEach(([conta,cods])=>cods.forEach(cod=>{const i=dados.investimentos.find(x=>x.codigo===cod&&x.exemploInvest&&!x.contaInv);if(i)i.contaInv=conta;}));
+            // 2) novos lançamentos de renda fixa e variável (mesmos ativos podem aparecer em mais de uma conta)
+            const bancos={[XP]:'XP Investimentos (demo)',[INTER]:'Banco Inter — Invest (demo)',[RICO]:'Rico Investimentos (demo)'};
+            const base=cod=>dados.investimentos.find(i=>i.codigo===cod&&i.exemploInvest&&String(i.id).startsWith('demo_inv_v17'));
+            const mensal=(dia,valor,iniMes=0)=>meses.slice(iniMes).map(([y,m],k)=>[iso(y,m,dia),valor+25*(k%3)]).filter(x=>x[0]<=hoje);
+            const nota='Lançamento fictício para visualização do painel.';let n=0;
+            const clonar=(cod,conta,movs)=>{
+                const b=base(cod);if(!b||!movs.length)return;n++;
+                const id='demo_inv_v18_'+String(n).padStart(2,'0');
+                const ordenados=movs.map((m,k)=>({id:`demo_mov_v18_${n}_${k+1}`,...m,nota})).sort((a,c)=>a.data.localeCompare(c.data));
+                dados.investimentos.push({...JSON.parse(JSON.stringify(b)),id,contaInv:conta,instituicao:bancos[conta],dataInicio:ordenados[0].data,movimentos:ordenados});
+            };
+            const fixa=(cod,conta,aportes)=>clonar(cod,conta,aportes.filter(a=>a[0]<=hoje).map(([data,valor])=>({data,tipo:'aporte',valor,quantidade:0,preco:0,taxas:0})));
+            const variavel=(cod,conta,compras,proventos=[])=>{
+                const b=base(cod);if(!b)return;const cot=ivNum(b.cotacaoAtual);
+                const movs=compras.filter(c=>c[0]<=hoje).map(([data,qtd,fator])=>{const preco=r2(cot*fator);return {data,tipo:'compra',valor:r2(qtd*preco),quantidade:qtd,preco,taxas:r2(Math.min(5,qtd*preco*0.0025))};});
+                proventos.filter(p=>p[0]<=hoje).forEach(([data,valor])=>movs.push({data,tipo:'provento',valor,quantidade:0,preco:0,taxas:0}));
+                clonar(cod,conta,movs);
+            };
+            fixa('CDB-PRE-DEMO',XP,mensal(15,400));
+            fixa('LCA-PRE-DEMO',XP,[['2026-03-05',3000],['2026-09-05',1200]]);
+            fixa('LCI-PRE-DEMO',XP,[['2026-02-20',2200],['2026-08-20',800]]);
+            fixa('TESOURO-IPCA-2035',XP,[['2026-02-27',2500],['2026-07-27',1500]]);
+            fixa('DEB-PRE-DEMO',XP,[['2026-05-06',2000]]);
+            fixa('CDB-CDI-DEMO',INTER,[['2026-02-10',2000],['2026-04-10',1500],['2026-07-10',1200]]);
+            fixa('TESOURO-SELIC-2029',INTER,[['2026-02-17',3000],['2026-05-15',1000],['2026-09-15',800]]);
+            fixa('LCI-CDI-DEMO',INTER,mensal(12,350,1));
+            fixa('DEB-PRE-DEMO',INTER,[['2026-02-16',2000],['2026-06-16',1000]]);
+            fixa('LCA-PRE-DEMO',INTER,[['2026-04-08',1800]]);
+            fixa('CDB-CDI-DEMO',RICO,[['2026-03-12',2500],['2026-08-12',900]]);
+            fixa('TESOURO-SELIC-2029',RICO,[['2026-02-24',1500],['2026-06-22',1500]]);
+            fixa('LCA-CDI-DEMO',RICO,[['2026-05-11',2400],['2026-10-02',600]]);
+            fixa('TESOURO-IPCA-2035',RICO,[['2026-04-14',1800]]);
+            fixa('CDB-PRE-DEMO',RICO,mensal(20,300));
+            variavel('VALE3',XP,[['2026-02-13',30,.93],['2026-06-10',25,1],['2026-09-11',20,.9]],[['2026-06-24',48],['2026-09-24',37]]);
+            variavel('BBAS3',XP,[['2026-02-23',60,.92],['2026-07-21',40,1.02]],[['2026-05-28',31]]);
+            const fm=[.97,.98,.99,1,.99,.98,1.01,1,1];
+            variavel('MXRF11',XP,meses.map(([y,m],k)=>[iso(y,m,18),20,fm[k]||1]),meses.map(([y,m],k)=>[iso(y,m,28),r2(20*(k+1)*0.09)]));
+            variavel('KNCR11',XP,[['2026-03-09',10,.98],['2026-08-10',8,1.01]],[['2026-04-15',9.5],['2026-06-15',14.8],['2026-09-15',20]]);
+            variavel('XPML11',XP,[['2026-02-12',14,.97],['2026-07-13',10,1]],[['2026-04-20',12],['2026-08-20',17]]);
+            variavel('IVVB11',XP,[['2026-03-25',9,.95]]);
+            variavel('ETH',XP,[['2026-03-21',.35,.88],['2026-08-22',.2,1.04]]);
+            variavel('PETR4',INTER,[['2026-02-10',40,.835],['2026-05-12',30,.897],['2026-08-14',25,.96]],[['2026-05-19',90],['2026-09-20',70]]);
+            variavel('ITUB4',INTER,[['2026-03-16',50,.99],['2026-08-17',40,1.03]],[['2026-06-02',42],['2026-09-01',35]]);
+            variavel('HGLG11',INTER,[['2026-02-20',8,.97],['2026-06-19',6,.96],['2026-09-18',5,.99]],[['2026-03-14',9.6],['2026-04-14',9.6],['2026-05-14',9.6],['2026-06-14',13.2],['2026-07-14',13.2],['2026-08-14',13.2],['2026-09-14',16.8]]);
+            variavel('BOVA11',INTER,[['2026-02-24',12,.9],['2026-07-24',10,.99]]);
+            variavel('AAPL34',INTER,[['2026-04-06',25,.92],['2026-09-07',15,1]],[['2026-09-02',19]]);
+            variavel('BTC',INTER,[['2026-03-04',.004,.88],['2026-08-05',.003,.97]]);
+            variavel('KNCR11',INTER,[['2026-05-12',12,.99]],[['2026-06-15',17],['2026-09-15',20]]);
+            variavel('PETR4',RICO,[['2026-03-09',60,.81],['2026-07-08',40,.926]],[['2026-05-19',62],['2026-09-20',52]]);
+            variavel('VALE3',RICO,[['2026-04-07',35,.98]],[['2026-06-24',33]]);
+            variavel('ITUB4',RICO,[['2026-05-18',45,.97]],[['2026-06-02',38],['2026-09-01',31]]);
+            variavel('HGLG11',RICO,[['2026-04-10',7,.98],['2026-08-12',5,.995]],[['2026-05-14',8.4],['2026-06-14',8.4],['2026-07-14',9.1],['2026-09-14',14]]);
+            variavel('BOVA11',RICO,[['2026-03-11',15,.91]]);
+            variavel('IVVB11',RICO,[['2026-02-26',10,.93],['2026-08-27',8,1.02]]);
+            variavel('MSFT34',RICO,[['2026-05-04',18,.95]],[['2026-09-02',12]]);
+            dados.demoContasV18=true;
+        }
+
+        const navAtivo=v=>{const x=visao;if(v==='contas')return x==='contas'||x.startsWith('contas_')||x==='transferencias'||x==='detalhe_conta';if(v==='cartoes')return x==='cartoes'||x.startsWith('cartoes_')||x==='parcelamentos'||['detalhe_cartao','detalhe_cartoes_kpi','detalhe_parcelamento'].includes(x);if(v==='investimentos')return x.startsWith('investimentos')||x==='detalhe_investimento';return v===x;};
 
         boot();
     </script>
