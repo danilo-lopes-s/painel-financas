@@ -295,6 +295,69 @@
         .ctx-box .metric-chart{border:none;box-shadow:none;margin:0;padding:8px 0;}
         body.dark .inv-type:hover{background:#2b3651;}
         @media(max-width:680px){.inv-form-section .form-row{grid-template-columns:1fr;}.inv-catalog{grid-template-columns:1fr}.inv-projections{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    
+        /* Ação contextual para retornar ao início após percorrer listas longas. */
+        .scroll-return-zone {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-sizing: border-box;
+            max-height: 0;
+            margin: 0;
+            padding: 0 8px;
+            overflow: hidden;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            pointer-events: none;
+            transition: opacity .32s ease, transform .32s ease,
+                        max-height .32s ease, padding .32s ease, margin .32s ease,
+                        visibility 0s linear .32s;
+        }
+        .scroll-return-zone.is-visible {
+            max-height: 90px;
+            margin: 9px 0 13px;
+            padding: 12px 8px;
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: auto;
+            transition: opacity .32s ease, transform .32s ease,
+                        max-height .32s ease, padding .32s ease, margin .32s ease,
+                        visibility 0s;
+        }
+        .scroll-return-button {
+            appearance: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            min-height: 42px;
+            padding: 10px 18px;
+            border: 1px solid rgba(255,255,255,.28);
+            border-radius: 10px;
+            background: linear-gradient(135deg, #5367df 0%, #8052b2 100%);
+            color: #fff;
+            font-size: .9rem;
+            font-weight: 800;
+            letter-spacing: .01em;
+            box-shadow: 0 5px 16px rgba(83,103,223,.24);
+            cursor: pointer;
+            transition: filter .18s ease, transform .18s ease, box-shadow .18s ease;
+        }
+        .scroll-return-button:hover:not(:disabled) {
+            filter: brightness(1.08);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(83,103,223,.32);
+        }
+        .scroll-return-button:focus-visible { outline: 3px solid #b9c4ff; outline-offset: 3px; }
+        .scroll-return-button:disabled { cursor: default; }
+        .scroll-return-button .scroll-return-arrow { font-size: 1.2rem; line-height: 1; }
+        body.dark .scroll-return-button { border-color: rgba(255,255,255,.18); box-shadow: 0 5px 18px rgba(0,0,0,.24); }
+        @media (prefers-reduced-motion: reduce) {
+            .scroll-return-zone, .scroll-return-button { transition: none !important; }
+        }
+
     </style>
 </head>
 <body>
@@ -2880,6 +2943,195 @@
         }
 
         const navAtivo=v=>{const x=visao;if(v==='contas')return x==='contas'||x.startsWith('contas_')||x==='transferencias'||x==='detalhe_conta';if(v==='cartoes')return x==='cartoes'||x.startsWith('cartoes_')||x==='parcelamentos'||['detalhe_cartao','detalhe_cartoes_kpi','detalhe_parcelamento'].includes(x);if(v==='investimentos')return x.startsWith('investimentos')||x==='detalhe_investimento';return v===x;};
+
+
+        // ---------- Ação contextual "Voltar ao início" para listas longas ----------
+        // A rotina acompanha tanto o conteúdo principal quanto os quadros de detalhamento.
+        // Ela não modifica lançamentos, cadastros, filtros ou fórmulas financeiras.
+        (function configurarRetornoAoInicioEmListasLongas() {
+            const raizes = Array.from(document.querySelectorAll('#contextContent, #quadroCorpo'));
+            if (!raizes.length) return;
+
+            const movimentoReduzido = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            const limiteAlturaLista = () => Math.max(280, Math.min(520, window.innerHeight * 0.48));
+            const limiteRolagem = () => Math.max(70, Math.min(130, window.innerHeight * 0.12));
+            const proximoFrame = window.requestAnimationFrame ? cb => window.requestAnimationFrame(cb) : cb => window.setTimeout(cb, 16);
+            const tarefasPendentes = new WeakSet();
+
+            function novoControle(rotulo = 'Voltar ao início') {
+                const zona = document.createElement('div');
+                zona.className = 'scroll-return-zone';
+                zona.dataset.scrollReturnControl = 'true';
+                zona.setAttribute('aria-hidden', 'true');
+                const botao = document.createElement('button');
+                botao.type = 'button';
+                botao.className = 'scroll-return-button';
+                botao.disabled = true;
+                botao.tabIndex = -1;
+                botao.setAttribute('aria-label', rotulo);
+                botao.innerHTML = '<span class="scroll-return-arrow" aria-hidden="true">↑</span><span>' + rotulo + '</span>';
+                botao.addEventListener('click', voltarAoInicio);
+                zona.appendChild(botao);
+                return zona;
+            }
+
+            function voltarAoInicio() {
+                // Retorna o documento e os painéis/diálogos com rolagem ao seu início.
+                const raizesConteudo = this.closest('#contextContent, #quadroCorpo');
+                const alvos = new Set([document.documentElement, document.body]);
+                let no = raizesConteudo || this.parentElement;
+                while (no) {
+                    const estilo = window.getComputedStyle(no);
+                    if (/(auto|scroll|overlay)/.test(estilo.overflowY) || no.scrollTop > 0) alvos.add(no);
+                    no = no.parentElement;
+                }
+                const comportamento = movimentoReduzido() ? 'auto' : 'smooth';
+                alvos.forEach(alvo => {
+                    if (!alvo) return;
+                    try {
+                        if (typeof alvo.scrollTo === 'function') alvo.scrollTo({ top: 0, behavior: comportamento });
+                        else alvo.scrollTop = 0;
+                    } catch (_) { alvo.scrollTop = 0; }
+                });
+                try { window.scrollTo({ top: 0, behavior: comportamento }); }
+                catch (_) { window.scrollTo(0, 0); }
+            }
+
+            function paiVisualDaTabela(tabela, raiz) {
+                // Coloca o botão logo após o quadro que contém a lista, fora de uma
+                // rolagem horizontal quando ela existir.
+                let no = tabela.parentElement;
+                while (no && no !== raiz) {
+                    const estilo = window.getComputedStyle(no);
+                    if (estilo.overflowX === 'auto' || estilo.overflowX === 'scroll' || no.classList.contains('ctx-box')) return no;
+                    no = no.parentElement;
+                }
+                return tabela;
+            }
+
+            function jaTemControleDepoisDo(no) {
+                return !!(no && no.nextElementSibling && no.nextElementSibling.matches('.scroll-return-zone'));
+            }
+
+            function inserirDepois(no, rotulo) {
+                if (!no || !no.parentElement || jaTemControleDepoisDo(no)) return null;
+                const zona = novoControle(rotulo);
+                no.insertAdjacentElement('afterend', zona);
+                return zona;
+            }
+
+            function precisaRolagemDentroDeModal(elemento) {
+                const modal = elemento.closest('.modal');
+                if (!modal) return true;
+                const painel = elemento.closest('.modal-content');
+                // Em janelas internas, o botão só é necessário quando o próprio conteúdo
+                // realmente ultrapassa a área disponível da janela.
+                return !!painel && painel.scrollHeight > painel.clientHeight + 40;
+            }
+
+            function inserirEmListasRepetidas(raiz, seletor, quantidadeMinima) {
+                const itens = Array.from(raiz.querySelectorAll(seletor)).filter(el => !el.closest('.scroll-return-zone'));
+                const pais = new Set(itens.map(el => el.parentElement).filter(Boolean));
+                pais.forEach(pai => {
+                    const filhos = Array.from(pai.children).filter(el => el.matches(seletor));
+                    if (filhos.length < quantidadeMinima || pai.querySelector(':scope > .scroll-return-zone')) return;
+                    if (pai.getBoundingClientRect().height < limiteAlturaLista()) return;
+                    if (!precisaRolagemDentroDeModal(pai)) return;
+                    inserirDepois(filhos[filhos.length - 1], 'Voltar ao início');
+                });
+            }
+
+            function atualizarVisibilidade() {
+                const limite = limiteRolagem();
+                document.querySelectorAll('.scroll-return-zone').forEach(zona => {
+                    const botao = zona.querySelector('button');
+                    if (!botao) return;
+                    let posicao = Math.max(window.scrollY || 0, document.documentElement.scrollTop || 0, document.body.scrollTop || 0);
+                    let pai = zona.parentElement;
+                    while (pai && pai !== document.body && pai !== document.documentElement) {
+                        const estilo = window.getComputedStyle(pai);
+                        if (/(auto|scroll|overlay)/.test(estilo.overflowY) && pai.scrollHeight > pai.clientHeight + 30) {
+                            posicao = Math.max(posicao, pai.scrollTop || 0);
+                        }
+                        pai = pai.parentElement;
+                    }
+                    const mostrar = posicao > limite;
+                    zona.classList.toggle('is-visible', mostrar);
+                    zona.setAttribute('aria-hidden', String(!mostrar));
+                    botao.disabled = !mostrar;
+                    botao.tabIndex = mostrar ? 0 : -1;
+                });
+            }
+
+            function atualizarRaiz(raiz) {
+                // Reconstrói apenas controles próprios; os registros e elementos da tela ficam intactos.
+                raiz.querySelectorAll('.scroll-return-zone').forEach(el => el.remove());
+                const limite = limiteAlturaLista();
+
+                // Listagens tabulares dos módulos (despesas, receitas, contas, cartões,
+                // parcelamentos, investimentos, transferências, categorias e detalhamentos).
+                Array.from(raiz.querySelectorAll('table')).forEach(tabela => {
+                    if (tabela.getBoundingClientRect().height < limite) return;
+                    if (!precisaRolagemDentroDeModal(tabela)) return;
+                    inserirDepois(paiVisualDaTabela(tabela, raiz), 'Voltar ao início');
+                });
+
+                // Listas representadas como cartões ou linhas, em vez de tabelas.
+                inserirEmListasRepetidas(raiz, '.trash-entry', 4);
+                inserirEmListasRepetidas(raiz, '.menu-linha', 4);
+                inserirEmListasRepetidas(raiz, '.category-breakdown', 6);
+                inserirEmListasRepetidas(raiz, '.card-indicator-line', 5);
+                inserirEmListasRepetidas(raiz, '.inv-type', 4);
+                inserirEmListasRepetidas(raiz, 'details.inv-group', 4);
+
+                // Fichas de conta/lançamento que contenham muitas linhas de informação.
+                Array.from(raiz.querySelectorAll('.detail-group')).forEach(grupo => {
+                    if (grupo.querySelectorAll(':scope > .ctx-row').length < 7) return;
+                    if (grupo.getBoundingClientRect().height < limite) return;
+                    if (!precisaRolagemDentroDeModal(grupo)) return;
+                    inserirDepois(grupo, 'Voltar ao início');
+                });
+                atualizarVisibilidade();
+            }
+
+            function agendarAtualizacao(raiz) {
+                if (tarefasPendentes.has(raiz)) return;
+                tarefasPendentes.add(raiz);
+                proximoFrame(() => {
+                    tarefasPendentes.delete(raiz);
+                    atualizarRaiz(raiz);
+                });
+            }
+
+            raizes.forEach(raiz => {
+                const observador = new MutationObserver(registros => {
+                    // Alterações causadas pelos próprios botões não exigem nova montagem.
+                    const conteudoMudou = registros.some(registro => {
+                        if (registro.type === 'attributes' && registro.target.closest && registro.target.closest('.scroll-return-zone')) return false;
+                        const alterados = [...registro.addedNodes, ...registro.removedNodes];
+                        return alterados.some(no => !(no.nodeType === 1 && no.matches && no.matches('.scroll-return-zone')));
+                    });
+                    if (conteudoMudou) agendarAtualizacao(raiz);
+                });
+                observador.observe(raiz, { childList: true, subtree: true, attributes: true, attributeFilter: ['open'] });
+                agendarAtualizacao(raiz);
+            });
+
+            // O quadro de detalhamento pode estar oculto ao iniciar; refaz a medição quando abrir.
+            const quadroModal = document.getElementById('quadroModal');
+            if (quadroModal) {
+                const observadorModal = new MutationObserver(() => {
+                    const raizModal = document.getElementById('quadroCorpo');
+                    if (raizModal) agendarAtualizacao(raizModal);
+                });
+                observadorModal.observe(quadroModal, { attributes: true, attributeFilter: ['class', 'style'] });
+            }
+
+            document.addEventListener('scroll', atualizarVisibilidade, { passive: true, capture: true });
+            window.addEventListener('scroll', atualizarVisibilidade, { passive: true });
+            window.addEventListener('resize', () => raizes.forEach(agendarAtualizacao), { passive: true });
+            window.addEventListener('load', () => raizes.forEach(agendarAtualizacao), { once: true });
+        })();
 
         boot();
     </script>
