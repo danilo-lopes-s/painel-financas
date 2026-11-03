@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -30,6 +31,11 @@
         .btn-danger { background: #f56565; color: white; padding: 6px 12px; font-size: 0.85em; } .btn-danger:hover { background: #e53e3e; }
         .btn-success { background: var(--ok); color: white; padding: 6px 12px; font-size: 0.85em; } .btn-success:hover { background: #1e702e; }
         .btn-back { background: #a0aec0; color: white; } .btn-back:hover { background: #718096; }
+        /* Retorno acessivel diretamente no inicio de cada pagina interna. */
+        .drill-backbar { display:flex; align-items:center; flex-wrap:wrap; gap:10px; padding:10px 12px; margin-bottom:16px; background:var(--surface); border:1px solid var(--line); border-radius:10px; }
+        .drill-backbar .btn { padding:8px 14px; }
+        .drill-back-destino { font-size:.85rem; color:var(--muted); font-weight:600; }
+
 
         .dashboard-layout { display: grid; grid-template-columns: 285px minmax(0, 1fr); gap: 18px; align-items: stretch; margin-bottom: 20px; }
         .cards-grid { display: flex; flex-direction: column; gap: 10px; }
@@ -417,6 +423,46 @@
             flex: 0 0 auto;
         }
 
+
+        /* Contas: escolha por clique e graficos sob consulta. */
+        .contas-menu-lista { display:grid; gap:10px; margin:12px 0 18px; }
+        .conta-menu-linha { display:grid; grid-template-columns:38px minmax(0,1fr) minmax(110px,auto) 24px; gap:13px; align-items:center; padding:15px 18px; border:1px solid var(--line); border-radius:12px; background:var(--surface); cursor:pointer; transition:background .18s,border-color .18s; }
+        .conta-menu-linha:hover { border-color:var(--pri); background:rgba(102,126,234,.085); }
+        .conta-menu-linha:focus-visible { outline:2px solid var(--pri); outline-offset:2px; }
+        .conta-menu-icon { font-size:1.7rem; text-align:center; }
+        .conta-menu-info { min-width:0; }
+        .conta-menu-info strong { display:block; font-size:1.02rem; overflow-wrap:anywhere; }
+        .conta-menu-info small { display:block; color:var(--muted); font-size:.77rem; margin-top:3px; overflow-wrap:anywhere; }
+        .conta-menu-saldo { font-weight:800; text-align:right; white-space:nowrap; }
+        .conta-menu-seta { color:var(--pri); font-size:1.45rem; text-align:right; }
+        /* Cartões individuais usam a mesma navegação das contas, sem expansão por "+". */
+        .cartao-menu-linha { grid-template-columns:38px minmax(0,1fr) 24px; }
+        .cartao-menu-resumo { text-align:right; min-width:175px; }
+        .cartao-menu-resumo > strong { display:block; white-space:nowrap; font-size:1.02rem; }
+        .cartao-menu-resumo > small { display:block; margin-top:3px; color:var(--muted); font-size:.75rem; }
+        .cartao-menu-resumo .card-limit-bar { display:block; margin-top:6px; width:100%; }
+        .cartao-menu-acoes { display:flex; gap:6px; align-items:center; }
+        .cartoes-menu-lista { display:grid; gap:10px; margin:12px 0 18px; }
+        @media(max-width:750px) {
+            .cartao-menu-linha { grid-template-columns:32px minmax(0,1fr) 22px; gap:9px; }
+            .cartao-menu-resumo { grid-column:2; text-align:left; min-width:0; }
+            .cartao-menu-resumo .card-limit-bar { max-width:280px; }
+            .cartao-menu-acoes { grid-column:2; }
+            .cartao-menu-seta { grid-column:3; grid-row:1 / 4; }
+        }
+        .contas-tipo-atalhos { display:flex; flex-wrap:wrap; gap:7px; margin:8px 0 19px; }
+        .contas-tipo-atalhos .btn { padding:7px 10px; font-size:.8rem; }
+        .conta-graficos-bloco { margin-top:18px; }
+        .conta-graficos-bloco > .exp-cab { padding:16px 18px; }
+        .conta-graficos-bloco > .exp-corpo { display:grid; gap:14px; }
+        .conta-graficos-bloco > .exp-corpo[hidden] { display:none!important; }
+        .conta-lancamentos-titulo { font-size:1.06rem; margin:16px 0 9px; }
+        @media (max-width:650px) {
+            .conta-menu-linha { grid-template-columns:32px minmax(0,1fr) 19px; gap:9px; padding:12px; }
+            .conta-menu-saldo { grid-column:2; text-align:left; font-size:.92rem; }
+            .conta-menu-seta { grid-column:3; grid-row:1 / 3; }
+        }
+        #backupUndoBtn[hidden], #backupImportInput[hidden] { display:none!important; }
     </style>
 
 
@@ -429,6 +475,10 @@
                 <button class="btn btn-save" onclick="salvarArquivo()" title="Sobrescrever / Baixar HTML">
                     💾 Salvar Arquivo
                 </button>
+                <button type="button" class="btn btn-back" onclick="exportarDadosJSON()" title="Baixar todos os dados em um arquivo JSON independente do HTML">📤 Exportar dados</button>
+                <button type="button" class="btn btn-back" onclick="document.getElementById('backupImportInput').click()" title="Restaurar dados de um backup JSON">📥 Importar dados</button>
+                <input type="file" id="backupImportInput" accept="application/json,.json" hidden onchange="processarArquivoBackup(event)">
+                <button type="button" class="btn btn-back" id="backupUndoBtn" hidden onclick="desfazerUltimaImportacao()" title="Desfazer a última importação feita nesta sessão">↶ Desfazer importação</button>
                 <span id="unsavedIndicator" class="change-indicator" role="status" aria-live="polite" title="Existem alterações ainda não salvas no arquivo">● Alterações não salvas</span>
                 <button class="btn btn-danger" onclick="zerarPainel()" title="Apagar os dados do painel somente após confirmação">🗑️ Zerar painel</button>
             </div>
@@ -604,6 +654,18 @@
         <div class="form-row"><div class="form-group"><label>Valor a transferir (R$)</label><input id="trValor" type="number" min="0.01" step="0.01"></div><div class="form-group"><label>Data</label><input id="trData" type="date"></div></div>
         <div class="form-group"><label>Descrição / observação</label><input id="trNota" placeholder="Ex.: Depósito, Pix entre contas"></div>
         <p class="period-note">O valor será subtraído da origem e adicionado ao destino. A operação não conta como receita ou despesa.</p><button class="btn btn-primary" onclick="salvarTransferencia()">Confirmar transferência</button></div></div>
+
+    <div id="backupModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="backupModalTitle" onclick="if(event.target===this)fecharBackupModal()">
+      <div class="modal-content" style="max-width:650px">
+        <div class="modal-header"><h2 id="backupModalTitle">📥 Conferir importação de dados</h2><button type="button" class="modal-close" onclick="fecharBackupModal()" aria-label="Fechar">✕</button></div>
+        <div id="backupResumo" style="line-height:1.6;margin:10px 0 18px"></div>
+        <p class="period-note" style="margin-bottom:15px"><strong>Atenção:</strong> a importação substitui os dados financeiros deste painel, mas não altera o arquivo HTML salvo até você clicar em <strong>Salvar Arquivo</strong>. Você poderá desfazer a importação nesta sessão.</p>
+        <div style="display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px">
+          <button type="button" class="btn btn-back" onclick="fecharBackupModal()">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="confirmarImportacaoJSON()">Confirmar e substituir os dados</button>
+        </div>
+      </div>
+    </div>
 
     <script>
         // ==========================================
@@ -970,7 +1032,64 @@
             else if(visao === 'saldo') { header('📊 Composição do Saldo Líquido'); document.getElementById('contextContent').innerHTML=graficoBarras('Composição atual', [['Dinheiro físico',saldoDinheiroTotal()],['Contas',saldoContasDisponiveis()],['Faturas pendentes',totalFaturasPendentesMes()],['Parcelas pendentes',totalParcelasPendentesMes()]],n=>n==='Dinheiro físico'?`selecionarVisao('contas_tipo','dinheiro')`:n==='Contas'?`selecionarVisao('contas_lista')`:regQuadro(()=>({titulo:n+' (mês selecionado)',html:quadroTabela(despesasCartaoPendentesMes(n==='Parcelas pendentes').map(itDesp))}))); }
             else renderSimple(visao);
         }
-        window.navegarVoltar = () => { let anterior=historicoVisoes.pop(); visao=anterior?anterior.visao:'principal'; itemAtual=anterior?anterior.itemAtual:null; renderVisao(); garantirTopoVisivel(); };
+        // Destino padrao para detalhes abertos sem um historico de navegacao
+        // (por exemplo, apos um redraw ou um atalho interno antigo).
+        const destinosVoltarPadrao = {
+            detalhe_conta:'contas', contas_lista:'contas', contas_tipo:'contas',
+            detalhe_cartao:'cartoes', detalhe_cartoes_kpi:'cartoes',
+            cartoes_lista:'cartoes', cartoes_unicas:'cartoes',
+            detalhe_parcelamento:'cartoes', parcelamentos:'cartoes',
+            detalhe_despesa:'despesas', detalhe_recebimento:'recebimentos',
+            detalhe_plan:'planejamento',
+            detalhe_investimento:'investimentos',
+            investimentos_fixa:'investimentos', investimentos_variavel:'investimentos',
+            investimentos_tipo:'investimentos', investimentos_lista:'investimentos',
+            investimentos_mes:'investimentos', investimentos_proventos:'investimentos',
+            transferencias:'contas', detalhe_categoria:'principal',
+            detalhe_resumo:'principal', saldo:'principal'
+        };
+        window.navegarVoltar = () => {
+            const anterior=historicoVisoes.pop();
+            const destino=anterior||{visao:destinosVoltarPadrao[visao]||'principal',itemAtual:null};
+            visao=destino.visao; itemAtual=destino.itemAtual;
+            renderVisao(); garantirTopoVisivel();
+        };
+
+        // Retorno visivel no proprio conteudo: nao depende do cabeçalho ou
+        // da posicao de rolagem e funciona em qualquer pagina de drill-down.
+        function rotuloDestinoVoltar(destino) {
+            const v=destino.visao,id=destino.itemAtual;
+            if(v==='detalhe_cartao')return 'Cartão: '+(id||'');
+            if(v==='detalhe_conta')return 'Conta: '+(id||'');
+            if(v==='contas_tipo')return 'Contas por tipo';
+            if(v==='investimentos_tipo')return 'Tipo de investimento';
+            const titulos={
+                principal:'Visão Geral', contas:'Contas e Transferências',
+                contas_lista:'Contas', cartoes:'Cartões e Parcelamentos',
+                cartoes_lista:'Cartões', cartoes_unicas:'Despesas únicas do cartão',
+                parcelamentos:'Parcelamentos', transferencias:'Transferências',
+                despesas:'Despesas', recebimentos:'Recebimentos',
+                planejamento:'Metas a Receber', investimentos:'Investimentos',
+                investimentos_fixa:'Renda Fixa', investimentos_variavel:'Renda Variável',
+                investimentos_lista:'Aplicações', investimentos_mes:'Histórico de investimentos',
+                investimentos_proventos:'Proventos', detalhe_resumo:'Gráfico',
+                detalhe_categoria:'Gráfico', saldo:'Composição do Saldo Líquido'
+            };
+            return titulos[v]||'tela anterior';
+        }
+        function injetarVoltarDrilldown() {
+            // Nao coloca botoes adicionais nas paginas iniciais de cada modulo.
+            const interna=/^(detalhe_|contas_|cartoes_|investimentos_)/.test(visao)
+                || ['transferencias','parcelamentos','saldo'].includes(visao);
+            if(!interna)return;
+            const anterior=historicoVisoes[historicoVisoes.length-1]
+                || {visao:destinosVoltarPadrao[visao]||'principal',itemAtual:null};
+            const rotulo=rotuloDestinoVoltar(anterior);
+            const pagina=document.getElementById('contextContent');
+            if(!pagina)return;
+            pagina.insertAdjacentHTML('afterbegin',
+                `<nav class="drill-backbar" aria-label="Voltar ao menu anterior"><button type="button" class="btn btn-back" onclick="navegarVoltar()" aria-label="Voltar para ${esc(rotulo)}">← Voltar</button><span class="drill-back-destino">${esc(rotulo)}</span></nav>`);
+        }
 
         function header(t, action, sub = 'PAINEL DE DADOS', action2 = null) {
             document.getElementById('contextSubtitle').textContent = sub; document.getElementById('contextTitle').textContent = t;
@@ -1074,7 +1193,7 @@
                 parcelamentos:{title:'⏳ Parcelamentos',action:{text:'+ Criar Parcelamento',fn:()=>abrirModalParcelamento()}}
             }[type];
             header(conf.title,conf.action,undefined,conf.action2);
-            let html='';
+            let html='',qtdExibida=0;
             if(type==='cartoes') html=renderListaCartoes();
             else if(type==='contas') html=renderListaContas();
             else if(type==='parcelamentos') html=renderListaParcelamentos();
@@ -1084,15 +1203,28 @@
                 if(fs.cat) a=a.filter(x=>x.categoria===fs.cat);
                 let [prop,dir]=fs.sort.split('_');
                 a.sort((x,y)=>{let vx=prop==='date'?new Date(x.data).getTime():x.valor,vy=prop==='date'?new Date(y.data).getTime():y.valor;return dir==='asc'?vx-vy:vy-vx});
+                qtdExibida=a.length;
                 html=`<div class="table-toolbar"><input type="text" placeholder="🔍 Buscar despesa..." value="${esc(fs.text)}" oninput="setFilter('despesas','text',this.value)"><select onchange="setFilter('despesas','cat',this.value)"><option value="">📂 Todas</option>${dados.categorias.map(c=>`<option value="${esc(c.nome)}" ${fs.cat===c.nome?'selected':''}>${c.icon} ${esc(c.nome)}</option>`).join('')}</select></div><div class="ctx-box"><table><thead><tr><th class="exp-col"></th><th>Data</th><th>Despesa</th><th>Forma</th><th>Status</th><th>Valor</th><th>Ações</th></tr></thead><tbody>${a.length?a.map(x=>{let c=getCatDetails(x.categoria);return expLinhaDe('lanc:despesas:'+x.id,6,()=>corpoDetalhe(()=>renderDetalheDespesa(x.id)),`<tr class="clickable-row" onclick="${chamada('detalhe_despesa',x.id)}"><td>${formatarData(x.data)}</td><td><strong>${esc(x.titulo)}</strong><br><span class="cat-chip"><i style="color:${c.cor}">${c.icon}</i> ${esc(x.categoria)}</span></td><td>${esc(x.origem.replace('_',' '))}</td><td>${statusControle('despesas',x)}</td><td><strong>${money(x.valor)}</strong> ${x.parcelas>1?`<small>(${x.parcelas}x)</small>`:''}</td><td><button type="button" class="inline-edit-button" title="Editar despesa" aria-label="Editar despesa" onclick="event.stopPropagation();abrirModalDespesa('${esc(x.id)}')">✏️</button> <button type="button" class="inline-edit-button" title="Mover despesa para a lixeira" aria-label="Excluir despesa" onclick="event.stopPropagation();excluirLancamento('despesas','${esc(x.id)}')">🗑️</button></td></tr>`)}).join(''):'<tr><td colspan="7" class="ctx-empty">Nenhum registro.</td></tr>'}</tbody></table></div>`;
             } else if(type==='recebimentos') {
-                let a=dados.recebimentos.filter(emPeriodo).sort((x,y)=>y.data.localeCompare(x.data));
+                let a=dados.recebimentos.filter(emPeriodo).sort((x,y)=>y.data.localeCompare(x.data)); qtdExibida=a.length;
                 html=`<div class="ctx-box"><table><thead><tr><th class="exp-col"></th><th>Data</th><th>Origem</th><th>Destino</th><th>Status</th><th>Valor</th><th>Ações</th></tr></thead><tbody>${a.length?a.map(x=>expLinhaDe('lanc:recebimentos:'+x.id,6,()=>corpoDetalhe(()=>renderDetalheRecebimento(x.id)),`<tr class="clickable-row" onclick="${chamada('detalhe_recebimento',x.id)}"><td>${formatarData(x.data)}</td><td><strong>${esc(x.titulo)}</strong>${x.metaId?'<small class="subtle-line">🎯 Meta confirmada</small>':''}</td><td>${x.categoriaRecebimento==='Dinheiro'?`💵 ${esc(normalizarNomeConta(x.conta||'Dinheiro'))}`:`⚡ ${esc(x.conta)}`}</td><td>${statusControle('recebimentos',x)}</td><td><strong style="color:var(--ok)">${money(x.valor)}</strong></td><td><button type="button" class="inline-edit-button" title="Editar recebimento" aria-label="Editar recebimento" onclick="event.stopPropagation();abrirModalRecebimento('${esc(x.id)}')">✏️</button> <button type="button" class="inline-edit-button" title="Mover recebimento para a lixeira" aria-label="Excluir recebimento" onclick="event.stopPropagation();excluirLancamento('recebimentos','${esc(x.id)}')">🗑️</button></td></tr>`)).join(''):'<tr><td colspan="7" class="ctx-empty">Nenhum registro.</td></tr>'}</tbody></table></div>`;
             } else if(type==='planejamento') {
-                let a=dados.planejamentos.filter(emPeriodo).sort((x,y)=>y.data.localeCompare(x.data));
+                let a=dados.planejamentos.filter(emPeriodo).sort((x,y)=>y.data.localeCompare(x.data)); qtdExibida=a.length;
                 html=`<div class="ctx-box"><table><thead><tr><th class="exp-col"></th><th>Data Prevista</th><th>Descrição da Meta</th><th>Status</th><th>Valor</th><th>Ações</th></tr></thead><tbody>${a.length?a.map(x=>expLinhaDe('lanc:planejamentos:'+x.id,5,()=>corpoDetalhe(()=>renderDetalhePlan(x.id)),`<tr class="clickable-row" onclick="${chamada('detalhe_plan',x.id)}"><td>${formatarData(x.data)}</td><td><strong>${esc(x.descricao)}</strong>${infoDestinoMeta(x)}</td><td>${statusControle('planejamentos',x)}</td><td><strong style="color:var(--alert-blue)">${money(x.valor)}</strong></td><td><button type="button" class="inline-edit-button" title="Editar meta" aria-label="Editar meta" onclick="event.stopPropagation();abrirModalPlan('${esc(x.id)}')">✏️</button> <button type="button" class="inline-edit-button" title="Mover meta para a lixeira" aria-label="Excluir meta" onclick="event.stopPropagation();excluirItem('planejamentos','${esc(x.id)}')">🗑️</button></td></tr>`)).join(''):'<tr><td colspan="6" class="ctx-empty">Nenhum registro.</td></tr>'}</tbody></table></div>`;
             }
-            document.getElementById('contextContent').innerHTML=graficoDaVisao(type)+html;
+            if(['despesas','recebimentos','planejamento'].includes(type)) {
+                const titulos={despesas:'Lançamentos de despesas',recebimentos:'Lançamentos de recebimentos',planejamento:'Metas a receber'};
+                const painelGrafico=expBloco('modulo:graficos:'+type,
+                    resumoCabecalho('Gráficos e indicadores','Clique para consultar os gráficos do período.'),
+                    ()=>graficoDaVisao(type),{aberto:false,classe:'conta-graficos-bloco'});
+                const painelLista=expBloco('modulo:lista:'+type,
+                    resumoCabecalho(`${titulos[type]} (${qtdExibida})`,'Clique para consultar os registros e seus detalhes.'),
+                    ()=>html,{aberto:false,classe:'conta-lista-bloco'});
+                document.getElementById('contextContent').innerHTML=painelLista+painelGrafico;
+            } else if(type==='cartoes') {
+                // A lista apenas oferece acesso aos cartões; todo o conteúdo financeiro está no drill-down.
+                document.getElementById('contextContent').innerHTML=html;
+            } else document.getElementById('contextContent').innerHTML=graficoDaVisao(type)+html;
         }
 
                 const kpi = (a, b, c='') => `<div class="ctx-kpi ${c}"><small>${a}</small><strong>${b}</strong></div>`;
@@ -1440,6 +1572,162 @@
             renderVisao();
         }
 
+
+        // === BACKUP JSON VERSIONADO: INICIO ===
+        // Este contrato guarda os dados e seus relacionamentos, não a aparência da interface.
+        const BACKUP_FORMATO = 'PainelFinanceiro';
+        const BACKUP_VERSAO_ESTRUTURA = 1;
+        const BACKUP_LISTAS = ['contas','cartoes','despesas','recebimentos','planejamentos','categorias',
+                              'investimentos','transferencias','movContas','tiposInvestimento','lixeira','navOrder'];
+        const BACKUP_LISTAS_REGISTROS = BACKUP_LISTAS.filter(x=>x!=='navOrder');
+        let backupPendente = null;
+        let backupAntesDaImportacao = null;
+
+        const copiaBackup = valor => JSON.parse(JSON.stringify(valor));
+
+        function contagensBackup(d) {
+            const r = {};
+            BACKUP_LISTAS.forEach(k => { r[k] = Array.isArray(d[k]) ? d[k].length : 0; });
+            r.movimentosInvestimento = (d.investimentos||[]).reduce((n,i)=>n+(Array.isArray(i.movimentos)?i.movimentos.length:0),0);
+            return r;
+        }
+
+        function criarConteudoBackup(d = dados) {
+            return {
+                formato: BACKUP_FORMATO,
+                versaoEstrutura: BACKUP_VERSAO_ESTRUTURA,
+                versaoPainel: 'Painel HTML independente (backup v1)',
+                exportadoEm: new Date().toISOString(),
+                dados: copiaBackup(d)
+            };
+        }
+
+        window.exportarDadosJSON = () => {
+            try {
+                const conteudo = JSON.stringify(criarConteudoBackup(), null, 2);
+                const blob = new Blob([conteudo+'\n'],{type:'application/json;charset=utf-8'});
+                const url = URL.createObjectURL(blob), a=document.createElement('a');
+                const stamp=new Date().toISOString().slice(0,19).replace(/[:T]/g,'-');
+                a.href=url;
+                a.download=`Backup_Painel_Financeiro_${stamp}.json`;
+                document.body.appendChild(a);a.click();a.remove();
+                setTimeout(()=>URL.revokeObjectURL(url),60000);
+                showToast('Backup JSON gerado. Guarde o arquivo em local seguro.');
+            } catch(e) { console.error('Erro ao exportar backup:',e);showToast('Não foi possível exportar o backup.',true); }
+        };
+
+        function conferirSegurancaBackup(obj,prof=0) {
+            if(prof>45)throw Error('Backup com profundidade de dados excessiva.');
+            if(!obj||typeof obj!=='object')return;
+            for(const k of Object.keys(obj)){
+                if(k==='__proto__'||k==='constructor'||k==='prototype')throw Error('Backup possui uma chave não permitida.');
+                const v=obj[k];
+                if(typeof v==='number'&&!Number.isFinite(v))throw Error('Backup possui número inválido.');
+                if(v&&typeof v==='object')conferirSegurancaBackup(v,prof+1);
+            }
+        }
+
+        function prepararImportacaoJSON(obj) {
+            if(!obj||typeof obj!=='object'||Array.isArray(obj))throw Error('O conteúdo JSON precisa ser um objeto válido.');
+            let raw,versao,descricao;
+            if(obj.formato===BACKUP_FORMATO){
+                versao=Number(obj.versaoEstrutura);
+                if(!Number.isInteger(versao)||versao<1||versao>BACKUP_VERSAO_ESTRUTURA)
+                    throw Error('Versão da estrutura incompatível. É necessário um conversor de dados para este backup.');
+                raw=obj.dados;
+                descricao=`Formato oficial v${versao}`;
+            }else if(['contas','cartoes','despesas','recebimentos','planejamentos','investimentos','transferencias'].some(k=>Array.isArray(obj[k]))){
+                raw=obj;
+                versao=0;
+                descricao='Estrutura antiga de dados reconhecida';
+            }else throw Error('Formato de arquivo não reconhecido como backup deste painel.');
+            if(!raw||typeof raw!=='object'||Array.isArray(raw))throw Error('O arquivo não contém dados financeiros válidos.');
+            conferirSegurancaBackup(raw);
+            const recebido=copiaBackup(raw);
+            BACKUP_LISTAS.forEach(k=>{
+                if(recebido[k]===undefined)recebido[k]=[];
+                if(!Array.isArray(recebido[k]))throw Error(`Campo "${k}" não é uma lista válida.`);
+            });
+            BACKUP_LISTAS_REGISTROS.forEach(k=>{
+                if(recebido[k].some(x=>!x||typeof x!=='object'||Array.isArray(x)))
+                    throw Error(`O campo "${k}" contém um registro inválido.`);
+            });
+            if(recebido.dinheiroFisico===undefined)recebido.dinheiroFisico=0;
+            if(!Number.isFinite(Number(recebido.dinheiroFisico)))throw Error('Saldo de dinheiro físico inválido.');
+            if(recebido.timestamp===undefined)recebido.timestamp=0;
+            // Evita a criação automática de registros demonstrativos ao reabrir o HTML.
+            recebido.exemplosV13=true;
+            recebido.exemplosInvestV17=true;
+            recebido.demoContasV18=true;
+            // Backups legados são mantidos sem reaplicar saldos de recebimentos históricos.
+            if(recebido.migracaoRecebV1===undefined)recebido.migracaoRecebV1=true;
+            if(recebido.zerado===undefined)recebido.zerado=true;
+            return {dados:recebido,descricao,versao};
+        }
+
+        function resumoImportacaoHTML(p) {
+            const c=contagensBackup(p.dados),titulos={contas:'Contas',cartoes:'Cartões',despesas:'Despesas',
+                recebimentos:'Recebimentos',planejamentos:'Metas a receber',categorias:'Categorias',
+                investimentos:'Investimentos',transferencias:'Transferências',movContas:'Movimentações de contas',
+                tiposInvestimento:'Tipos personalizados de investimento',lixeira:'Lixeira'};
+            const detalhe=Object.entries(titulos).map(([k,t])=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:4px 0;border-bottom:1px solid var(--line)"><span>${t}</span><strong>${c[k]}</strong></div>`).join('');
+            return `<p style="margin-bottom:9px"><strong>${p.descricao}</strong><br>Este arquivo contém:</p><div style="max-height:290px;overflow:auto">${detalhe}</div><p class="period-note" style="margin:12px 0 0">Além desses registros, serão restaurados os campos adicionais, estados, relacionamentos e ${c.movimentosInvestimento} movimentações internas de investimentos.</p>`;
+        }
+
+        window.processarArquivoBackup = async event => {
+            const input=event?.target||document.getElementById('backupImportInput');
+            const arquivo=input?.files?.[0];
+            if(input)input.value='';
+            if(!arquivo)return;
+            backupPendente=null;
+            if(arquivo.size>30*1024*1024)return showToast('Arquivo maior que o limite permitido (30 MB).',true);
+            try {
+                const conteudo=JSON.parse(await arquivo.text());
+                const preparado=prepararImportacaoJSON(conteudo);
+                backupPendente=preparado;
+                document.getElementById('backupResumo').innerHTML=resumoImportacaoHTML(preparado);
+                openModal('backupModal');
+            } catch(e) {
+                console.error('Erro ao validar o JSON:',e);
+                alert('Não foi possível importar o backup.\n\n'+(e.message||'Arquivo inválido.'));
+            }
+        };
+
+        window.fecharBackupModal = () => {
+            backupPendente=null;
+            closeModal('backupModal');
+        };
+
+        window.confirmarImportacaoJSON = () => {
+            if(!backupPendente)return;
+            const anterior=copiaBackup(dados);
+            const restaurado=copiaBackup(backupPendente.dados);
+            backupPendente=null;
+            closeModal('backupModal');
+            dados=restaurado;
+            garantirModulos();
+            garantirContaDinheiroPrincipal();
+            backupAntesDaImportacao=anterior;
+            const undo=document.getElementById('backupUndoBtn');if(undo)undo.hidden=false;
+            historicoVisoes=[];visao='principal';itemAtual=null;
+            restaurarOrdemCards();
+            marcarAlteracao();refresh();
+            showToast('Dados importados. Confira os registros e clique em Salvar Arquivo para persistir.');
+        };
+
+        window.desfazerUltimaImportacao = () => {
+            if(!backupAntesDaImportacao)return;
+            if(!confirm('Desfazer a última importação? As alterações feitas depois dela também serão descartadas.'))return;
+            dados=copiaBackup(backupAntesDaImportacao);
+            backupAntesDaImportacao=null;
+            const undo=document.getElementById('backupUndoBtn');if(undo)undo.hidden=true;
+            historicoVisoes=[];visao='principal';itemAtual=null;
+            restaurarOrdemCards();
+            marcarAlteracao();refresh();
+            showToast('Importação desfeita nesta sessão. Salve o HTML apenas se desejar manter o estado restaurado.');
+        };
+        // === BACKUP JSON VERSIONADO: FIM ===
+
         function nomeArquivoAtual() {
             let nome = location.pathname.split('/').pop() || '';
             try { nome = decodeURIComponent(nome); } catch (e) {}
@@ -1448,7 +1736,11 @@
 
         window.salvarArquivo = async () => {
             dados.timestamp = Date.now();
+            const __undoImport = document.getElementById('backupUndoBtn');
+            const __undoWasVisible = __undoImport && !__undoImport.hidden;
+            if(__undoImport) __undoImport.hidden=true;
             let htmlContent = document.documentElement.outerHTML;
+            if(__undoImport) __undoImport.hidden=!__undoWasVisible;
             let safeData = JSON.stringify(dados).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/</g, '\\u003c');
             let regex = /(<script id="dados_injetados">)(.*?)(<\/script>)/is;
             htmlContent = htmlContent.replace(regex, `$1 window.INJETADO = JSON.parse("${safeData}"); $3`);
@@ -1506,15 +1798,20 @@
         function cartoesKpi(titulo,valor,tipo,subtexto='',cartao=null,cor='') {
             return `<div class="ctx-kpi kpi-action" role="button" tabindex="0" onclick="selecionarVisao('detalhe_cartoes_kpi','${tipo}${cartao?':'+encodeURIComponent(cartao):''}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"><small>${titulo}</small><strong${cor?` style="color:${cor}"`:''}>${money(valor)}</strong>${subtexto?`<small style="margin-top:6px${cor?';color:'+cor:''}">${subtexto}</small>`:''}</div>`;
         }
+        // Na lista principal, apenas identifique o cartao. Os indicadores pertencem a pagina individual.
         function renderListaCartoes() {
-            const limite=sum(dados.cartoes,'limite'),fatura=totalFaturasMes(),usado=totalUsadoLimite(),livre=limite-usado,lancamentos=sum(dados.despesas.filter(x=>(x.origem||'').startsWith('cartao_')&&emPeriodo(x)));
-            const kpis=`<div class="ctx-kpis">${cartoesKpi('Limite total',limite,'limite','100% dos limites cadastrados')}${cartoesKpi('Limite usado (fatura + parcelas futuras)',usado,'usado',pctCartao(usado,limite)+' do limite total')}${cartoesKpi('Limite livre (limite − usado)',livre,'livre',pctCartao(Math.max(0,livre),limite)+' disponível',null,corDisponibilidade(livre,limite))}${cartoesKpi('Lançamentos do período',lancamentos,'lancamentos',pctCartao(lancamentos,fatura)+' das faturas do mês')}</div>`;
-            const nota='<p class="period-note">Usado e livre referem-se ao mês selecionado: o limite usado soma as despesas pendentes do mês e as parcelas futuras ainda não pagas (que reservam limite). Itens pagos ou cancelados liberam o limite.</p>';
-            const tabela=`<div class="ctx-box"><table class="card-summary-table"><thead><tr><th class="exp-col"></th><th>Cartão</th><th>Vencimento</th><th>Limite / participação</th><th>Limite usado (fatura + parcelas futuras)</th><th>Livre / disponibilidade</th><th>Ações</th></tr></thead><tbody>${dados.cartoes.length?dados.cartoes.map(c=>{
-                const fat=faturaCartao(c),valor=usadoLimiteCartao(c),lim=Number(c.limite)||0,liv=lim-valor,cor=corDisponibilidade(liv,lim),pLivre=lim>0?liv/lim*100:0;
-                return expLinhaDe('k:cartao:'+c.nome,6,()=>corpoCapturado(()=>renderDetalheCartao(c.nome)),`<tr class="clickable-row" onclick="${chamada('detalhe_cartao',c.nome)}" title="Clique para acessar o cartão"><td><strong>${esc(c.nome)}</strong><small class="subtle-line">${esc(c.banco||'')}</small></td><td>Dia ${esc(c.vencimento)}${c.fechamento?`<small>Fecha dia ${esc(c.fechamento)}</small>`:''}</td><td>${money(lim)}<small>${pctCartao(lim,limite)} do limite total</small></td><td>${money(valor)}<small>Fatura do mês ${money(fat)} + parcelas futuras ${money(reservaFuturaCartao(c))} · ${pctCartao(valor,lim)} do próprio limite</small></td><td><strong style="color:${cor}">${money(liv)}</strong><small style="color:${cor};font-weight:600">${pLivre.toFixed(1)}% disponível</small><div class="card-limit-bar"><span style="background:${cor};width:${Math.max(0,Math.min(100,pLivre))}%"></span></div></td><td><button type="button" class="inline-edit-button" title="Editar cartão" aria-label="Editar cartão" onclick="event.stopPropagation();abrirModalEditarCartao('${esc(c.nome)}')">✏️</button> <button type="button" class="inline-edit-button" title="Mover cartão e lançamentos para a lixeira" aria-label="Excluir cartão" onclick="event.stopPropagation();excluirCartao('${esc(c.nome)}')">🗑️</button></td></tr>`);
-            }).join(''):'<tr><td colspan="7" class="ctx-empty">Nenhum cartão cadastrado.</td></tr>'}</tbody></table>${legendaLimites()}</div>`;
-            return kpis+nota+tabela;
+            const itens=dados.cartoes.map(c=>{
+                const dadosBanco=[c.banco,c.bandeira,c.final?'Final '+c.final:''].filter(Boolean).join(' · ');
+                const abrir=chamada('detalhe_cartao',c.nome);
+                return `<div class="conta-menu-linha cartao-menu-linha" role="button" tabindex="0" aria-label="Abrir cartão ${esc(c.nome)}" title="Abrir informações, faturas e lançamentos do cartão" onclick="${abrir}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+                    <span class="conta-menu-icon" aria-hidden="true">💳</span>
+                    <span class="conta-menu-info"><strong>${esc(c.nome)}</strong><small>${esc(dadosBanco||'Cartão cadastrado')}</small></span>
+                    <span class="conta-menu-seta" aria-hidden="true">›</span>
+                </div>`;
+            }).join('');
+            return `<h3 class="section-heading">Cartões cadastrados (${dados.cartoes.length})</h3>
+                <p class="period-note">Clique em um cartão para consultar os limites, a fatura, os lançamentos e os gráficos na página individual.</p>
+                <div class="contas-menu-lista cartoes-menu-lista">${itens||'<div class="ctx-empty">Nenhum cartão cadastrado.</div>'}</div>`;
         }
         function renderDetalheIndicadorCartoes(tipo) {
             const [indicador,codCartao]=String(tipo).split(':');const nomeCartao=codCartao?decodeURIComponent(codCartao):null;tipo=indicador;
@@ -1541,10 +1838,42 @@
         }
 
         function renderDetalheCartao(nome) {
-            let c=dados.cartoes.find(x=>x.nome===nome); if(!c) return navegarVoltar();
-            let d=dados.despesas.filter(x=>x.origem==='cartao_'+nome&&emPeriodo(x)),f=usadoLimiteCartao(c),fat=faturaCartao(c),res=reservaFuturaCartao(c);
+            const c=dados.cartoes.find(x=>x.nome===nome);
+            if(!c) return navegarVoltar();
+            const d=dados.despesas.filter(x=>x.origem==='cartao_'+nome&&emPeriodo(x));
+            const f=usadoLimiteCartao(c),fat=faturaCartao(c),res=reservaFuturaCartao(c);
+            const limite=Number(c.limite)||0,livre=limite-f,cor=corDisponibilidade(livre,limite);
+            const percentualLivre=limite>0?Math.max(0,Math.min(100,livre/limite*100)):0;
+            const lancamentos=sum(d),fatTotal=totalFaturasMes();
+            const descricao=[c.banco,c.bandeira,c.final?'Final '+c.final:''].filter(Boolean).join(' · ');
+            const identificacao=`<div class="ctx-box" style="margin-bottom:16px"><h3>💳 ${esc(c.nome)}</h3>
+                <p class="period-note" style="margin:6px 0 8px">${esc(descricao||'Cartão cadastrado')}</p>
+                <div class="ctx-grid" style="gap:10px;margin:10px 0">
+                    <div><small>Vencimento da fatura</small><div><strong>Dia ${esc(c.vencimento||'—')}</strong></div></div>
+                    <div><small>Fechamento da fatura</small><div><strong>${c.fechamento?'Dia '+esc(c.fechamento):'Não informado'}</strong></div></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><span>Limite disponível</span><strong style="color:${cor}">${money(livre)} · ${percentualLivre.toFixed(1)}% livre</strong></div>
+                <div class="card-limit-bar" style="margin:7px 0 5px"><span style="width:${percentualLivre}%;background:${cor}"></span></div>
+                ${legendaLimites()}</div>`;
+            const indicadores=`<div class="ctx-kpis">
+                ${cartoesKpi('Limite total',limite,'limite',pctCartao(limite,sum(dados.cartoes,'limite'))+' dos limites cadastrados',c.nome)}
+                ${cartoesKpi('Limite usado (fatura + parcelas futuras)',f,'usado',pctCartao(f,limite)+' do limite total',c.nome)}
+                ${cartoesKpi('Limite livre (limite − usado)',livre,'livre',pctCartao(Math.max(0,livre),limite)+' disponível',c.nome,cor)}
+                ${cartoesKpi('Lançamentos do período',lancamentos,'lancamentos',pctCartao(lancamentos,fatTotal)+' do total das faturas do mês',c.nome)}
+            </div>`;
+            const composicao=`<div class="ctx-kpis kpis-auto">
+                ${kpi('Fatura do mês',money(fat))}
+                ${kpi('Parcelas futuras pendentes',money(res))}
+                ${kpi('Lançamentos no período',String(d.length))}
+            </div>`;
+            const menuLancamentos=expBloco('cartao:lista:'+nome,resumoCabecalho(`Lançamentos do cartão (${d.length})`,'Compras, status e detalhes dos lançamentos no período.'),()=>tabelaLancamentos(d),{aberto:false,classe:'conta-lista-bloco'});
+            const menuGraficos=expBloco('cartao:graficos:'+nome,resumoCabecalho('Gráficos do cartão','Gastos por categoria no período.'),()=>graficoBarras('Gastos do período por categoria',agrupar(d,'categoria'),n=>regQuadro(()=>({titulo:`${nome} — ${n}`,html:quadroTabela(d.filter(x=>(x.categoria||'Outros')===n).map(itDesp))}))),{aberto:false,classe:'conta-graficos-bloco'});
+            const geral=expBloco('cartoes:graficos:gerais',resumoCabecalho('📊 Visão geral dos cartões','Comparação de faturas e limites entre os cartões cadastrados.'),()=>graficoDaVisao('cartoes'),{aberto:false,classe:'conta-graficos-bloco'});
             header('💳 '+nome,{text:'+ Criar Parcelamento',fn:()=>abrirModalParcelamento(nome)},'LANÇAMENTOS DO CARTÃO',{text:'🗑️ Excluir cartão',cls:'btn-danger',fn:()=>excluirCartao(nome)});
-            document.getElementById('contextContent').innerHTML=`<div class="inv-toolbar"><button type="button" class="btn btn-primary" onclick="abrirModalDespesa(null,${esc(JSON.stringify('cartao_'+c.nome))})">+ Nova despesa</button><button type="button" class="btn btn-back" onclick="abrirModalEditarCartao('${esc(c.nome)}')">✏️ Editar cadastro do cartão</button></div><div class="ctx-kpis">${cartoesKpi('Limite total',c.limite,'limite',pctCartao(c.limite,sum(dados.cartoes,'limite'))+' do total',c.nome)}${cartoesKpi('Limite usado',f,'usado',pctCartao(f,c.limite)+' do limite · fatura '+money(fat)+' + parcelas futuras '+money(res),c.nome)}${cartoesKpi('Limite livre',c.limite-f,'livre',pctCartao(Math.max(0,c.limite-f),c.limite)+' disponível',c.nome,corDisponibilidade(c.limite-f,c.limite))}${kpi('Vencimento','Dia '+c.vencimento)}</div>`+graficoBarras('Gastos do período por categoria',agrupar(d,'categoria'),n=>regQuadro(()=>({titulo:`${nome} — ${n}`,html:quadroTabela(d.filter(x=>(x.categoria||'Outros')===n).map(itDesp))})))+tabelaLancamentos(d);
+            document.getElementById('contextContent').innerHTML=`<div class="inv-toolbar"><button type="button" class="btn btn-primary" onclick="abrirModalDespesa(null,${esc(JSON.stringify('cartao_'+c.nome))})">+ Nova despesa</button><button type="button" class="btn btn-back" onclick="${esc(`abrirModalEditarCartao(${JSON.stringify(c.nome)})`)}">✏️ Editar cadastro do cartão</button></div>`
+                +identificacao+indicadores+composicao+
+                `<p class="period-note">O limite usado soma despesas pendentes do mês e parcelas futuras ainda não pagas; itens pagos ou cancelados liberam limite.</p>`
+                +menuLancamentos+menuGraficos+geral;
         }
         function gruposParcelas() {
             let grupos=new Map(); dados.despesas.filter(x=>x.parcelas>1).forEach(x=>{let key=x.parcelamentoId||x.origem+'|'+x.titulo.replace(/\s*\(\d+\/\d+\)$/,''); if(!grupos.has(key)) grupos.set(key,[]); grupos.get(key).push(x);}); return grupos;
@@ -2019,8 +2348,8 @@
             const tr=[...dados.transferencias].sort((a,b)=>b.data.localeCompare(a.data));
             const nomes=Object.fromEntries(contasTransferencia().map(x=>[x.chave,x.nome]));
             document.getElementById('contextContent').innerHTML=`<p class="period-note">Transferências movem valores diretamente entre os saldos das contas e dinheiro físico. Não entram como despesas nem receitas. É possível editar ou excluir e os saldos serão revertidos e recalculados.</p>
-                <div class="ctx-kpis">${kpi('Dinheiro físico (todas as contas)',money(saldoDinheiroTotal()))}${kpi('Saldo nas contas correntes/poupança',money(saldoContasDisponiveis()))}${kpi('Total disponível',money(saldoDinheiroTotal()+saldoContasDisponiveis()))}${kpi('Transferido no período',money(sum(tr.filter(emPeriodo))))}</div>
-                <div class="ctx-box"><h3>Histórico de transferências</h3><table><thead><tr><th>Data</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Ações</th></tr></thead><tbody>${tr.length?tr.map(x=>`<tr><td>${formatarData(x.data)}</td><td>${esc(nomes[x.origem]||x.origem)}</td><td>${esc(nomes[x.destino]||x.destino)}</td><td><strong>${money(x.valor)}</strong>${x.nota?`<small class="subtle-line">${esc(x.nota)}</small>`:''}</td><td class="inv-actions"><button class="inline-edit-button" onclick="abrirTransferencia('${x.id}')" title="Editar transferência">✏️</button><button class="inline-edit-button" onclick="excluirTransferencia('${x.id}')" title="Excluir e reverter">🗑️</button></td></tr>`).join(''):'<tr><td colspan="5" class="ctx-empty">Nenhuma transferência registrada.</td></tr>'}</tbody></table></div>`;
+                <div class="ctx-kpis">${kpi('Dinheiro físico (todas as contas)',money(saldoDinheiroTotal()))}${kpi('Saldo nas contas correntes/poupança',money(saldoContasDisponiveis()))}${kpi('Total disponível',money(saldoDinheiroTotal()+saldoContasDisponiveis()))}${kpi(`Transferido no período (${tr.filter(emPeriodo).length})`,money(sum(tr.filter(emPeriodo))))}</div>
+                ${expBloco('transferencias:historico',resumoCabecalho(`Histórico de transferências (${tr.length})`,'Todas as transferências cadastradas; clique para exibir.'),()=>`<div class="ctx-box"><table><thead><tr><th>Data</th><th>Origem</th><th>Destino</th><th>Valor</th><th>Ações</th></tr></thead><tbody>${tr.length?tr.map(x=>`<tr><td>${formatarData(x.data)}</td><td>${esc(nomes[x.origem]||x.origem)}</td><td>${esc(nomes[x.destino]||x.destino)}</td><td><strong>${money(x.valor)}</strong>${x.nota?`<small class="subtle-line">${esc(x.nota)}</small>`:''}</td><td class="inv-actions"><button class="inline-edit-button" onclick="abrirTransferencia('${x.id}')" title="Editar transferência">✏️</button><button class="inline-edit-button" onclick="excluirTransferencia('${x.id}')" title="Excluir e reverter">🗑️</button></td></tr>`).join(''):'<tr><td colspan="5" class="ctx-empty">Nenhuma transferência registrada.</td></tr>'}</tbody></table></div>`,{aberto:false,classe:'conta-lista-bloco'})}`;
         }
         function abrirTransferencia(id=null) {
             garantirModulos();const t=id?dados.transferencias.find(x=>x.id===id):null;
@@ -2545,21 +2874,8 @@
 
         // ---------- Contas (primeiro nível) ----------
         function renderContasLista(){
-            header('🏦 Contas',{text:'+ Transferir',fn:()=>abrirTransferencia()},'CONTAS E TRANSFERÊNCIAS',{text:'+ Nova Conta',fn:()=>abrirModalConta()});
-            const ent=sum(dados.recebimentos.filter(x=>emPeriodo(x)&&statusRecebimento(x)!=='Cancelado')),sai=sum(dados.despesas.filter(x=>(String(x.origem||'').startsWith('conta_')||x.origem==='dinheiro')&&emPeriodo(x)));
-            const patrimonio=dados.contas.reduce((s,c)=>s+valorConta(c),0);
-            const kpis=`<div class="ctx-kpis">${kpi('Saldo digital (corrente/poupança)',money(saldoContasDisponiveis()))}${kpi('Entradas do período',money(ent))}${kpi('Saídas em contas no período',money(sai))}${kpi('Patrimônio total de contas',money(patrimonio))}</div>`;
-            const valoresBarras=dados.contas.map(c=>[c.nome,valorConta(c)]);
-            const barras=graficoBarras('Saldos atuais por conta',valoresBarras,n=>`selecionarVisao('detalhe_conta',${JSON.stringify(n)})`,{arrastavel:true,chave:'contas',dragCount:dados.contas.length});
-            const linhasContas=dados.contas.map(c=>{
-                const tipo=tipoConta(c),principal=ehContaDinheiroPrincipal(c),descricao=tipo==='dinheiro'?(principal?'Dinheiro físico em mãos':'Conta de reserva em dinheiro físico'):(c.banco||'Conta sem instituição informada');
-                const acoes=`<button type="button" class="inline-edit-button" title="Editar conta" aria-label="Editar conta" onclick="event.stopPropagation();abrirModalEditarConta('${esc(c.nome)}')">✏️</button> ${principal?'<small class="subtle-line" title="Conta principal usada por lançamentos antigos">Principal</small>':`<button type="button" class="inline-edit-button" title="Mover conta para a lixeira" aria-label="Excluir conta" onclick="event.stopPropagation();excluirConta('${esc(c.nome)}')">🗑️</button>`}`;
-                return expLinhaDe('c:conta:'+c.nome,4,()=>corpoCapturado(()=>renderDetalheConta(c.nome)),`<tr class="clickable-row" onclick="${chamada('detalhe_conta',c.nome)}"><td><strong>${esc(c.nome)}</strong><small class="subtle-line">${esc(descricao)}</small></td><td>${esc(TIPOS_CONTA[tipo]?.nome||tipo)}</td><td>${money(valorConta(c))}</td><td>${acoes}</td></tr>`);
-            }).join('');
-            const tabelaContas=`<div class="ctx-box"><h3>Contas cadastradas</h3><p class="period-note">Contas bancárias e contas de dinheiro físico usam a mesma lista e podem ser reordenadas pela cruzinha lateral do gráfico. Dinheiro físico não exige banco, agência ou número de conta. A conta principal é preservada para manter os lançamentos antigos vinculados.</p><table><thead><tr><th class="exp-col"></th><th>Conta</th><th>Tipo</th><th>Saldo / valor atual</th><th>Ações</th></tr></thead><tbody>${linhasContas||'<tr><td colspan="5" class="ctx-empty">Nenhuma conta cadastrada.</td></tr>'}</tbody></table></div>`;
-            const cards=`<h3 class="section-heading">Composição por tipo de conta</h3><p class="period-note">Abra um tipo (botão +) para ver suas contas, gráficos, desempenho e detalhes. Contas de investimento e previdência seguem regras próprias e ficam fora do saldo líquido disponível.</p>${['corrente','poupança','investimento','previdência','dinheiro'].map(t=>expBloco('c:tipo:'+t,cabecalhoTipoConta(t),()=>corpoCapturado(()=>renderContasTipo(t)))).join('')}`;
-            const geral=graficoEvolucaoContas('contasGeral',dados.contas.map(c=>c.nome),'📈 Evolução de todas as contas juntas',true,'Contas correntes e de dinheiro físico mostram o saldo cadastrado, atualizado por movimentações e transferências. Poupança, previdência e investimento seguem suas regras próprias.');
-            document.getElementById('contextContent').innerHTML=barras+kpis+tabelaContas+cards+graficosContasLista()+geral;
+            // Compatibilidade com os atalhos antigos para a listagem de contas.
+            renderContasPagina();
         }
 
         // ---------- Contas por tipo (drill down) ----------
@@ -2570,10 +2886,11 @@
             if(!nomes.length){alvo.innerHTML=`<div class="ctx-kpis">${kpi('Valor total',money(0))}${kpi('Contas cadastradas',0)}</div><p class="ctx-empty">Nenhuma ${esc(info.nome.toLowerCase())} cadastrada. Use <strong>+ Nova Conta</strong> para criar.</p>`;return;}
             const ag=agregarSeries(nomes),d=desempenho(ag),cap=['poupança','previdência','investimento'].includes(tipo);
             const origens=nomes.map(n=>origemDaConta(dados.contas.find(c=>c.nome===n)));
-            const entP=sum(dados.recebimentos.filter(x=>emPeriodo(x)&&statusRecebimento(x)!=='Cancelado'&&nomes.includes(destinoDeRecebimentoParaConta(x)))),saiP=sum(dados.despesas.filter(x=>emPeriodo(x)&&x.status!=='Cancelado'&&origens.includes(x.origem)));
+            const entradasTipo=dados.recebimentos.filter(x=>emPeriodo(x)&&statusRecebimento(x)!=='Cancelado'&&nomes.includes(destinoDeRecebimentoParaConta(x))),saidasTipo=dados.despesas.filter(x=>emPeriodo(x)&&x.status!=='Cancelado'&&origens.includes(x.origem));
+            const entP=sum(entradasTipo),saiP=sum(saidasTipo);
             let kpis;
-            if(tipo==='corrente') kpis=[kpi('Saldo atual',money(valorTipoConta(tipo))),kpi('Contas',nomes.length),kpi('Entradas no período',money(entP)),kpi('Saídas no período',money(saiP))];
-            else if(tipo==='dinheiro') {const chaves=new Set(nomes.map(chaveTransf));kpis=[kpi('Saldo total em dinheiro físico',money(valorTipoConta(tipo))),kpi('Contas de dinheiro',nomes.length),kpi('Entradas no período',money(entP)),kpi('Saídas no período',money(saiP)),kpi('Transferências no período',dados.transferencias.filter(t=>emPeriodo(t)&&(chaves.has(t.origem)||chaves.has(t.destino))).length)];}
+            if(tipo==='corrente') kpis=[kpi('Saldo atual',money(valorTipoConta(tipo))),kpi('Contas',nomes.length),kpi(`Entradas no período (${entradasTipo.length})`,money(entP)),kpi(`Saídas no período (${saidasTipo.length})`,money(saiP))];
+            else if(tipo==='dinheiro') {const chaves=new Set(nomes.map(chaveTransf));kpis=[kpi('Saldo total em dinheiro físico',money(valorTipoConta(tipo))),kpi('Contas de dinheiro',nomes.length),kpi(`Entradas no período (${entradasTipo.length})`,money(entP)),kpi(`Saídas no período (${saidasTipo.length})`,money(saiP)),kpi('Transferências no período',dados.transferencias.filter(t=>emPeriodo(t)&&(chaves.has(t.origem)||chaves.has(t.destino))).length)];}
             else if(tipo==='investimento') kpis=[kpi('Patrimônio investido',money(d.atual)),kpi('Aportes líquidos',money(d.capital)),kpi('Resultado acumulado',`<span style="color:${corSinal(d.resultado)}">${money(d.resultado)}</span>`),kpi('Rentabilidade acumulada',rentTxt(d.rent)),kpi('Proventos recebidos',money(d.proventos)),kpi('Caixa nas contas',money(sum(contasDoTipo(tipo),'saldo')))];
             else kpis=[kpi('Saldo atual',money(d.atual)),kpi('Capital aportado (líquido)',money(d.capital)),kpi('Rendimento acumulado',`<span style="color:${corSinal(d.resultado)}">${money(d.resultado)}</span>`),kpi('Rentabilidade acumulada',rentTxt(d.rent))];
             const nota={corrente:'O saldo cadastrado é atualizado por transferências e despesas/recebimentos debitados ou creditados automaticamente.',poupança:'Saldo, rendimentos e rentabilidade são calculados a partir dos lançamentos da conta.',previdência:'Saldo, aportes e rentabilidade são calculados a partir dos lançamentos da conta. Fora do saldo líquido disponível.',investimento:'Patrimônio calculado a partir das aplicações vinculadas a estas contas. Fora do saldo líquido disponível; resultados são estimativas.',dinheiro:'Cada conta de dinheiro físico possui saldo próprio, pode ser reordenada e pode receber despesas, recebimentos e transferências.'}[tipo];
@@ -2588,10 +2905,13 @@
                 const inst=tipoConta(c)==='dinheiro'?(principal?'Conta principal · em mãos':'Reserva em dinheiro físico'):[c.banco,c.agencia?'Ag. '+c.agencia:'',c.numero?'Conta '+c.numero:''].filter(Boolean).join(' · ')||'—';
                 const cel=tipo==='investimento'?`<td>${money(c.saldo)}</td><td>${money(s.saldo[ult])}</td><td>${money(s.capital[ult])}</td><td style="color:${corSinal(res)}">${money(res)}</td><td>${rentTxt(rent)}</td>`:cap?`<td>${money(s.saldo[ult])}</td><td>${money(s.capital[ult])}</td><td style="color:${corSinal(res)}">${money(res)}</td><td>${rentTxt(rent)}</td>`:`<td>${money(s.saldo[ult])}</td><td style="color:var(--ok)">${money(eP)}</td><td style="color:var(--bad)">${money(sP)}</td>`;
                 const acoes=`<button type="button" class="inline-edit-button" title="Editar conta" aria-label="Editar conta" onclick="event.stopPropagation();abrirModalEditarConta('${esc(n)}')">✏️</button> ${principal?'<small class="subtle-line">Principal</small>':`<button type="button" class="inline-edit-button" title="Mover conta para a lixeira" aria-label="Excluir conta" onclick="event.stopPropagation();excluirConta('${esc(n)}')">🗑️</button>`}`;
-                return expLinhaDe('c:tconta:'+n,(tipo==='investimento'?7:cap?6:5),()=>corpoCapturado(()=>renderDetalheConta(n),'_t'),`<tr class="clickable-row" onclick="${chamada('detalhe_conta',n)}" title="Abrir conta"><td><strong>${esc(n)}</strong><small class="subtle-line">${esc(inst)}</small></td>${cel}<td>${acoes}</td></tr>`);
+                return `<tr class="clickable-row" role="button" tabindex="0" onclick="${chamada('detalhe_conta',n)}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}" title="Clique para abrir a página da conta"><td><strong>${esc(n)}</strong><small class="subtle-line">${esc(inst)}</small></td>${cel}<td>${acoes}</td></tr>`;
             }).join('');
             const cab=tipo==='investimento'?'<th>Conta</th><th>Caixa</th><th>Patrimônio investido</th><th>Aportes líquidos</th><th>Resultado</th><th>Rentab.</th><th>Ações</th>':cap?'<th>Conta</th><th>Saldo atual</th><th>Capital líquido</th><th>Rendimento</th><th>Rentab.</th><th>Ações</th>':'<th>Conta</th><th>Saldo atual</th><th>Entradas (período)</th><th>Saídas (período)</th><th>Ações</th>';
-            alvo.innerHTML=`<div class="ctx-kpis kpis-auto">${kpis.join('')}</div><p class="period-note">${nota}</p>${graficos}<div class="ctx-box"><h3>${esc(info.nome)} — contas</h3><table><thead><tr><th class="exp-col"></th>${cab}</tr></thead><tbody>${linhas}</tbody></table></div>`;
+            const blocoGraficos=expBloco('contas:tipo:graficos:'+tipo,
+                resumoCabecalho('📊 Gráficos e desempenho — '+esc(info.nome),'Clique para exibir ou ocultar os gráficos deste tipo de conta.'),
+                ()=>graficos,{aberto:false,classe:'conta-graficos-bloco'});
+            alvo.innerHTML=`<div class="ctx-kpis kpis-auto">${kpis.join('')}</div><p class="period-note">${nota}</p><div class="ctx-box"><h3>${esc(info.nome)} — contas</h3><p class="period-note">Clique na linha para abrir a conta em outra página. Use Voltar para retornar.</p><div style="overflow-x:auto"><table><thead><tr>${cab}</tr></thead><tbody>${linhas}</tbody></table></div></div>${blocoGraficos}`;
         }
 
         // ---------- detalhe de uma conta ----------
@@ -2606,10 +2926,10 @@
             let kpis;
             if(tipo==='investimento')kpis=[kpi('Patrimônio investido',money(d.atual)),kpi('Aportes líquidos',money(d.capital)),kpi('Resultado acumulado',`<span style="color:${corSinal(d.resultado)}">${money(d.resultado)}</span>`),kpi('Rentabilidade acumulada',rentTxt(d.rent)),kpi('Proventos recebidos',money(d.proventos)),kpi('Caixa na conta',money(c.saldo))];
             else if(cap)kpis=[kpi('Saldo atual',money(d.atual)),kpi('Capital aportado (líquido)',money(d.capital)),kpi('Rendimento acumulado',`<span style="color:${corSinal(d.resultado)}">${money(d.resultado)}</span>`),kpi('Rentabilidade acumulada',rentTxt(d.rent))];
-            else kpis=[kpi('Saldo atual cadastrado',money(c.saldo)),kpi('Entradas no período',money(sum(rcb))),kpi('Saídas no período',money(sum(dsp)))];
+            else kpis=[kpi('Saldo atual cadastrado',money(c.saldo)),kpi(`Entradas no período (${rcb.length})`,money(sum(rcb))),kpi(`Saídas no período (${dsp.length})`,money(sum(dsp)))];
             const linhaSaldo=graficoLinhas(idp+'Ev',{titulo:tipo==='investimento'?'📈 Evolução do patrimônio':'📈 Evolução do saldo',labels:s.meses.map(m=>m.label),series:[{nome:tipo==='investimento'?'Patrimônio investido':'Saldo',valores:s.saldo,cor:info.cor},...(cap?[{nome:'Capital aportado (líquido)',valores:s.capital,cor:'#a0aec0',tracejado:true,largura:2}]:[])],nota:'Clique em um ponto para ver os lançamentos do mês.',detalhe:(si,pi)=>quadroContaMes(nome,pi,s)});
             const fluxo=graficoFluxoContas(idp+'Fl',[nome],cap?'📊 Aportes × saques/resgates por mês':'📊 Entradas × saídas lançadas por mês',tipo==='investimento'?'Aportes e compras':'Entradas',tipo==='investimento'?'Resgates e vendas':'Saídas');
-            let comp='',tabelas='';
+            let comp='',tabelas='',movimentoGrafico='';
             if(tipo==='investimento'){
                 comp=roscasInvestimentoContas(idp+'Cp',[nome]);tabelas=`<h3 class="section-heading">Aplicações desta conta</h3>${agruparInvPorTipo(invDaConta(nome),'conta-'+nome)}`;
             }else if(cap){
@@ -2617,10 +2937,24 @@
                 const movs=dados.movContas.filter(m=>m.conta===nome).sort((a,b)=>b.data.localeCompare(a.data));
                 tabelas=`<div class="ctx-box"><h3>Lançamentos da conta</h3><table><thead><tr><th>Data</th><th>Tipo</th><th>Valor</th><th>Observação</th><th>Ações</th></tr></thead><tbody>${movs.length?movs.map(m=>{const v=Number(m.valor)||0,sinal=MOV_SAIDA.includes(m.tipo)?-1:MOV_ENTRADA.includes(m.tipo)?1:(v>=0?1:-1);return `<tr><td>${formatarData(m.data)}</td><td>${esc(MOV_NOME[m.tipo]||m.tipo)}</td><td style="color:${corSinal(sinal)}">${sinal>0?'+ ':'− '}${money(Math.abs(v))}</td><td>${esc(m.nota||'')}</td><td class="inv-actions"><button class="inline-edit-button" onclick="abrirMovConta('${esc(nome)}','${esc(m.id)}')" title="Editar lançamento">✏️</button> <button class="inline-edit-button" onclick="excluirMovConta('${m.id}')" title="Excluir lançamento">🗑️</button></td></tr>`;}).join(''):'<tr><td colspan="5" class="ctx-empty">Nenhum lançamento.</td></tr>'}</tbody></table></div>`;
             }else{
-                comp=roscaSaidasCategoria(idp+'Sc',[nome]);tabelas=graficoBarras('Movimentação no período',[['Entradas',sum(rcb)],['Saídas',sum(dsp)]],n=>regQuadro(()=>({titulo:`${n} — ${nome} (período)`,html:quadroTabela((n==='Entradas'?rcb.map(itRec):dsp.map(itDesp)))})))+tabelaLancamentos(dsp,rcb);
+                comp=roscaSaidasCategoria(idp+'Sc',[nome]);
+                movimentoGrafico=graficoBarras('Movimentação no período',[['Entradas',sum(rcb)],['Saídas',sum(dsp)]],n=>regQuadro(()=>({titulo:`${n} — ${nome} (período)`,html:quadroTabela((n==='Entradas'?rcb.map(itRec):dsp.map(itDesp)))})));
+                tabelas=tabelaLancamentos(dsp,rcb);
             }
             const acoes=`<div class="inv-toolbar">${tipo==='corrente'||din?`<button type="button" class="btn btn-primary" onclick="abrirModalDespesa(null,${esc(JSON.stringify(origem))})">+ Nova despesa</button>`:''}<button type="button" class="btn btn-primary" onclick="abrirModalRecebimento(null,${esc(JSON.stringify(nome))})">+ Novo recebimento</button><button type="button" class="btn btn-back" onclick="abrirModalEditarConta('${esc(nome)}')">✏️ Editar cadastro da conta</button>${principal?'<small class="subtle-line">Conta principal preservada para compatibilidade com lançamentos antigos.</small>':`<button type="button" class="btn btn-danger" onclick="excluirConta('${esc(nome)}')">🗑️ Mover conta para a lixeira</button>`}</div>`;
-            document.getElementById('contextContent').innerHTML=`${acoes}${inst?`<p class="period-note">${esc(inst)}${c.notas?' — '+esc(c.notas):''}</p>`:''}<div class="ctx-kpis kpis-auto">${kpis.join('')}</div>${linhaSaldo}${fluxo}${comp}${tabelas}${tabelaTransferenciasConta(nome)}`;
+            const graficosConta=expBloco('conta:graficos:'+nome,
+                resumoCabecalho('📊 Gráficos e desempenho', 'Evolução do saldo, entradas e saídas e distribuição — clique para expandir.'),
+                ()=>`${linhaSaldo}${fluxo}${movimentoGrafico}${comp}`,{aberto:false,classe:'conta-graficos-bloco'});
+            const qtdLancamentos=tipo==='investimento'?invDaConta(nome).length:cap?dados.movContas.filter(m=>m.conta===nome).length:dsp.length+rcb.length;
+            const tituloLancamentos=tipo==='investimento'?'Aplicações da conta':'Lançamentos da conta';
+            const blocoLancamentos=expBloco('conta:lancamentos:'+nome,
+                resumoCabecalho(`${tituloLancamentos} (${qtdLancamentos})`, 'Clique para consultar, editar ou atualizar os registros.'),
+                ()=>tabelas,{aberto:false,classe:'conta-lista-bloco'});
+            const qtdTransferencias=transferenciasDaConta(nome).length;
+            const blocoTransferencias=expBloco('conta:transferencias:'+nome,
+                resumoCabecalho(`Transferências desta conta no período (${qtdTransferencias})`, 'Movimentações entre contas e dinheiro físico.'),
+                ()=>tabelaTransferenciasConta(nome),{aberto:false,classe:'conta-lista-bloco'});
+            document.getElementById('contextContent').innerHTML=`${acoes}${inst?`<p class="period-note">${esc(inst)}${c.notas?' — '+esc(c.notas):''}</p>`:''}<div class="ctx-kpis kpis-auto">${kpis.join('')}</div>${blocoLancamentos}${blocoTransferencias}${graficosConta}`;
         }
 
         // ---------- lançamentos manuais em poupança / previdência ----------
@@ -3180,7 +3514,11 @@
             document.getElementById('contextContent').insertAdjacentHTML('afterbegin','<div class="exp-toolbar"><button type="button" id="btnExpTudo" class="btn btn-back" onclick="alternarTudo()">⊞ Expandir tudo</button></div>');
             atualizarRotuloExpTudo();
         }
-        function renderVisao(){registroExp.clear();registroAcoes.length=0;renderVisaoBase();injetarToolbarExp();}
+        function renderVisao(){
+            registroExp.clear();registroAcoes.length=0;renderVisaoBase();
+            if(!['contas','contas_lista','contas_tipo','detalhe_conta'].includes(visao))injetarToolbarExp();
+            injetarVoltarDrilldown();
+        }
 
         // captura o HTML de uma tela existente (sem alterar o cabeçalho) para exibi-lo dentro de um bloco expansível
         function capturarHtml(fn){
@@ -3212,12 +3550,9 @@
         // telas antigas (detalhe de conta, cartão, parcelamento…) agora abrem dentro do card principal, já expandidas
         function redirecionarParaCard(v,param){
             const C=a=>({view:'contas',abrir:a}),K=a=>({view:'cartoes',abrir:a});
-            if(v==='contas_lista')return C(['c:bloco:contas']);
-            if(v==='transferencias')return C(['c:bloco:transf']);
-            if(v==='contas_tipo')return C(['c:bloco:contas','c:tipo:'+param]);
-            if(v==='detalhe_conta'){const nome=normalizarNomeConta(param),c=contaPeloNome(nome),t=c?tipoConta(c):'dinheiro';return C(['c:bloco:contas','c:tipo:'+t,'c:conta:'+nome,'c:tconta:'+nome]);}
+            // Contas e cartões individuais usam páginas próprias, com botão Voltar.
+            // Mantém a compatibilidade dos atalhos antigos para as seções agrupadas.
             if(v==='cartoes_lista')return K(['k:bloco:cartoes']);
-            if(v==='detalhe_cartao')return K(['k:bloco:cartoes','k:cartao:'+param]);
             if(v==='parcelamentos')return K(['k:bloco:parc']);
             if(v==='cartoes_unicas')return K(['k:bloco:unicas']);
             if(v==='detalhe_parcelamento'){
@@ -3235,17 +3570,63 @@
         // ---------- telas unificadas ----------
         function resumoCabecalho(titulo,resumo){return `<strong>${titulo}</strong><small>${resumo}</small>`;}
         function renderContasPagina(){
-            header('🏦 Contas e Transferências',null,'PAINEL DE DADOS');
-            const tr=dados.transferencias;
-            document.getElementById('contextContent').innerHTML=
-                expBloco('c:bloco:contas',resumoCabecalho('🏦 Contas',`${dados.contas.length} ${dados.contas.length===1?'conta':'contas'} · dinheiro físico ${money(saldoDinheiroTotal())} · saldo digital disponível ${money(saldoContasDisponiveis())} · total disponível ${money(saldoContasDisponiveis()+saldoDinheiroTotal())}`),()=>corpoCapturado(renderContasLista,'','<button type="button" class="btn btn-primary" onclick="abrirModalDespesa()">+ Nova despesa</button><button type="button" class="btn btn-primary" onclick="abrirModalRecebimento()">+ Novo recebimento</button>'),{aberto:false,classe:'exp-bloco-principal'})+
-                expBloco('c:bloco:transf',resumoCabecalho('🔄 Transferências',`${tr.length} ${tr.length===1?'registro':'registros'} · ${money(sum(tr.filter(emPeriodo)))} no período`),()=>corpoCapturado(renderTransferencias),{aberto:false,classe:'exp-bloco-principal'});
+            header('🏦 Contas e Transferências',
+                {text:'+ Nova Conta',fn:()=>abrirModalConta()},'PAINEL DE DADOS',
+                {text:'+ Transferir',fn:()=>abrirTransferencia()});
+            const contas=dados.contas;
+            const patrimonio=contas.reduce((total,conta)=>total+valorConta(conta),0);
+            const caixa=saldoContasDisponiveis()+saldoDinheiroTotal();
+            const saldoTipos=['corrente','poupança','investimento','previdência','dinheiro'];
+            const atalhos=saldoTipos.map(tipo=>{
+                const info=TIPOS_CONTA[tipo],total=contasDoTipo(tipo).length;
+                return `<button type="button" class="btn btn-back" onclick="${esc(`selecionarVisao('contas_tipo',${JSON.stringify(tipo)})`)}">${info.icone} ${esc(info.nome)} (${total})</button>`;
+            }).join('');
+            const itens=contas.map(conta=>{
+                const tipo=tipoConta(conta),info=TIPOS_CONTA[tipo];
+                const icon=info?.icone||(tipo==='dinheiro'?'💵':'🏦');
+                const detalhes=tipo==='dinheiro'? 'Dinheiro físico':[
+                    info?.nome||tipo,conta.banco||'',conta.agencia?'Ag. '+conta.agencia:'',conta.numero?'Conta '+conta.numero:''
+                ].filter(Boolean).join(' · ');
+                const ativar=esc(`selecionarVisao('detalhe_conta',${JSON.stringify(conta.nome)})`);
+                return `<div class="conta-menu-linha" role="button" tabindex="0" title="Abrir a página da conta" onclick="${ativar}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+                    <span class="conta-menu-icon">${icon}</span>
+                    <span class="conta-menu-info"><strong>${esc(conta.nome)}</strong><small>${esc(detalhes)}</small></span>
+                    <strong class="conta-menu-saldo">${money(valorConta(conta))}</strong>
+                    <span class="conta-menu-seta" aria-hidden="true">›</span>
+                </div>`;
+            }).join('');
+            const barras=()=>graficoBarras('Saldos atuais por conta',contas.map(c=>[c.nome,valorConta(c)]),
+                nome=>`selecionarVisao('detalhe_conta',${JSON.stringify(nome)})`,
+                {arrastavel:true,chave:'contas',dragCount:contas.length});
+            const graficosGerais=expBloco('contas:graficos:geral',
+                resumoCabecalho('📊 Gráficos gerais das contas','Saldos, distribuições e evolução histórica. Clique para expandir.'),
+                ()=>barras()+graficosContasLista()+graficoEvolucaoContas('contasGeral',contas.map(c=>c.nome),
+                    '📈 Evolução de todas as contas juntas',true,
+                    'Contas correntes e dinheiro físico mostram os saldos cadastrados; outras modalidades seguem suas regras próprias.'),
+                {aberto:false,classe:'conta-graficos-bloco'});
+            const trPeriodo=dados.transferencias.filter(emPeriodo);
+            const acaoTr=esc(`selecionarVisao('transferencias')`);
+            document.getElementById('contextContent').innerHTML=`
+                <div class="ctx-kpis kpis-auto">
+                    ${kpi('Saldo digital disponível',money(saldoContasDisponiveis()))}
+                    ${kpi('Dinheiro físico',money(saldoDinheiroTotal()))}
+                    ${kpi('Total disponível',money(caixa))}
+                    ${kpi('Patrimônio total em contas',money(patrimonio))}
+                </div>
+                <h3 class="section-heading">Contas cadastradas</h3>
+                <p class="period-note">Clique em uma conta para abrir os lançamentos e os gráficos em uma página própria. Não é necessário usar o botão +.</p>
+                <div class="contas-menu-lista">${itens||'<div class="ctx-empty">Nenhuma conta cadastrada.</div>'}</div>
+                <h3 class="section-heading">Consultar por tipo</h3><div class="contas-tipo-atalhos">${atalhos}</div>
+                <div class="menu-linha" role="button" tabindex="0" onclick="${acaoTr}" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}">
+                    <span class="ml-ico">🔄</span><span class="ml-txt"><strong>Transferências</strong><small>${dados.transferencias.length} registros · ${money(sum(trPeriodo))} no período</small></span><span class="ml-seta">›</span>
+                </div>
+                ${graficosGerais}`;
         }
         function renderCartoesPagina(){
             header('💳 Cartões e Parcelamentos',null,'PAINEL DE DADOS');
             const grupos=[...gruposParcelas()].filter(([id,itens])=>itens.some(emPeriodo)),unicas=despesasUnicasCartao();
             document.getElementById('contextContent').innerHTML=
-                expBloco('k:bloco:cartoes',resumoCabecalho('💳 Cartões',`${dados.cartoes.length} ${dados.cartoes.length===1?'cartão':'cartões'} · limite total ${money(sum(dados.cartoes,'limite'))} · faturas do mês ${money(totalFaturasMes())}`),()=>corpoCapturado(()=>renderSimple('cartoes'),'',`<button type="button" class="btn btn-primary" onclick="abrirModalDespesa(null,${esc(JSON.stringify('cartao_'+(dados.cartoes[0]?.nome||'')))})">+ Nova despesa</button>`),{aberto:false,classe:'exp-bloco-principal'})+
+                expBloco('k:bloco:cartoes',resumoCabecalho('💳 Cartões',`${dados.cartoes.length} ${dados.cartoes.length===1?'cartão cadastrado':'cartões cadastrados'} · clique para escolher um cartão` ),()=>corpoCapturado(()=>renderSimple('cartoes'),'',`<button type="button" class="btn btn-primary" onclick="abrirModalDespesa(null,${esc(JSON.stringify('cartao_'+(dados.cartoes[0]?.nome||'')))})">+ Nova despesa</button>`),{aberto:false,classe:'exp-bloco-principal'})+
                 expBloco('k:bloco:parc',resumoCabecalho('⏳ Parcelamentos',`${grupos.length} no período · ${money(sum(dados.despesas.filter(x=>x.parcelas>1&&emPeriodo(x))))} em parcelas do período`),()=>corpoCapturado(()=>renderSimple('parcelamentos')),{aberto:false,classe:'exp-bloco-principal'})+
                 expBloco('k:bloco:unicas',resumoCabecalho('🧾 Despesas únicas nesta fatura',`<b>${unicas.length} ${unicas.length===1?'lançamento':'lançamentos'}</b> no período · ${money(sum(unicas))} em compras à vista no cartão`),()=>corpoCapturado(renderCartoesUnicas),{aberto:false,classe:'exp-bloco-principal'});
         }
